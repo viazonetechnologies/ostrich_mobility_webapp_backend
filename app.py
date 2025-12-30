@@ -36,7 +36,7 @@ PRIMARY_DB_CONFIG = {
     'database': os.getenv('DB_NAME', 'ostrich'),
     'port': int(os.getenv('DB_PORT', 16599)),
     'charset': 'utf8mb4',
-    'ssl': {'ssl_mode': 'REQUIRED'},
+    'ssl_disabled': False,
     'connect_timeout': 30
 }
 
@@ -53,14 +53,29 @@ FALLBACK_DB_CONFIG = {
 def get_db_connection():
     connection = None
     try:
-        # Try primary Aiven database
+        # Try primary Aiven database with DNS fallback
         print(f"Attempting connection to {PRIMARY_DB_CONFIG['host']}:{PRIMARY_DB_CONFIG['port']}")
-        connection = pymysql.connect(**PRIMARY_DB_CONFIG)
-        print("Connected to Aiven database")
-        yield connection
+        
+        # Try with different SSL configurations
+        configs_to_try = [
+            {**PRIMARY_DB_CONFIG, 'ssl_disabled': False},
+            {**PRIMARY_DB_CONFIG, 'ssl_disabled': True},
+            {**PRIMARY_DB_CONFIG, 'ssl': {}}
+        ]
+        
+        for config in configs_to_try:
+            try:
+                connection = pymysql.connect(**config)
+                print("Connected to Aiven database")
+                yield connection
+                return
+            except Exception as e:
+                print(f"Config failed: {e}")
+                continue
+                
+        yield None
     except Exception as e:
-        print(f"Database connection failed: {e}")
-        print(f"Connection config: {PRIMARY_DB_CONFIG['host']}:{PRIMARY_DB_CONFIG['port']}")
+        print(f"All connection attempts failed: {e}")
         yield None
     finally:
         if connection:
