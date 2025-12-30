@@ -145,6 +145,7 @@ def manifest():
 
 # Auth endpoints
 @app.route('/api/v1/auth/login', methods=['POST', 'OPTIONS'])
+@app.route('/auth/login', methods=['POST', 'OPTIONS'])  # Fallback route
 def login():
     if request.method == 'OPTIONS':
         # Handle preflight request
