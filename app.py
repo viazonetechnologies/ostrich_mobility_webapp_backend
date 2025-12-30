@@ -56,11 +56,13 @@ def get_db_connection():
     connection = None
     try:
         # Try primary Aiven database
+        print(f"Attempting connection to {PRIMARY_DB_CONFIG['host']}:{PRIMARY_DB_CONFIG['port']}")
         connection = pymysql.connect(**PRIMARY_DB_CONFIG)
         print("Connected to Aiven database")
         yield connection
     except Exception as e:
         print(f"Database connection failed: {e}")
+        print(f"Connection config: {PRIMARY_DB_CONFIG['host']}:{PRIMARY_DB_CONFIG['port']}")
         yield None
     finally:
         if connection:
