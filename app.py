@@ -9,20 +9,7 @@ import os
 from contextlib import contextmanager
 
 app = Flask(__name__)
-CORS(app, origins=[
-    "https://ostrich-mobility-webapp-frontend-30qk57q6m.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-njla52h12.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-q9h7f1ze4.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-e02jnh3no.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-96yh4lvso.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-8fcycjeoo.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-iw0b0ulsl.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-8hy7as2t9.vercel.app",
-    "https://ostrich-mobility-webapp-frontend.vercel.app",
-    "https://ostrich-mobility-webapp-frontend.vercel.app",
-    "http://localhost:3000",
-    "*"  # Allow all origins for debugging
-], supports_credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allow_headers=['Content-Type', 'Authorization'])
+CORS(app, origins="*", supports_credentials=False, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allow_headers=['Content-Type', 'Authorization'])
 
 # Configuration
 SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
@@ -110,6 +97,16 @@ def token_required(f):
                 return f(current_user=payload, *args, **kwargs)
         return jsonify({'error': 'Token required'}), 401
     return decorated
+
+# Global OPTIONS handler for all routes
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = jsonify({})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
 
 # Health check
 @app.route('/health')
@@ -416,7 +413,8 @@ def create_customer(current_user):
 def bulk_upload_customers(current_user):
     return jsonify({"message": "Bulk upload completed", "count": 0})
 
-@app.route('/api/v1/customers/<int:customer_id>')
+@app.route('/api/v1/customers/<int:customer_id>', methods=['GET', 'OPTIONS'])
+@app.route('/customers/<int:customer_id>', methods=['GET', 'OPTIONS'])  # Fallback route
 @token_required
 def read_customer(customer_id, current_user):
     try:
