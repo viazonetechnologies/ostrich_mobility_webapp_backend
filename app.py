@@ -65,7 +65,10 @@ def get_db_connection():
 
 # In-memory storage for demo
 users = {
-    "admin": {"id": 1, "username": "admin", "password": "admin123", "role": "admin"}
+    "admin": {"id": 1, "username": "admin", "password": "admin123", "role": "admin"},
+    "manager": {"id": 2, "username": "manager", "password": "manager123", "role": "manager"},
+    "user": {"id": 3, "username": "user", "password": "user123", "role": "user"},
+    "demo": {"id": 4, "username": "demo", "password": "demo123", "role": "user"}
 }
 customers = {}
 products = []
@@ -207,6 +210,21 @@ def login():
                 "role": "admin"
             }
         })
+    
+    # Check other demo users
+    for user_key, user_data in users.items():
+        if username == user_data["username"] and password == user_data["password"]:
+            access_token = create_access_token({"sub": str(user_data["id"])})
+            return jsonify({
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {
+                    "id": user_data["id"],
+                    "username": user_data["username"],
+                    "role": user_data["role"]
+                }
+            })
+    
     return jsonify({"detail": "Invalid credentials"}), 401
 
 @app.route('/api/v1/auth/simple-login', methods=['POST'])
