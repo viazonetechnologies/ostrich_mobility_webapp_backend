@@ -1002,21 +1002,6 @@ def create_service(current_user):
     except Exception as e:
         print(f"Database error in create_service: {e}")
         return jsonify({"id": 999, "message": "Service ticket created successfully"})
-                data.get('customer_id'),
-                data.get('product_serial_number'),
-                data.get('issue_description'),
-                data.get('priority', 'MEDIUM'),
-                data.get('status', 'OPEN'),
-                data.get('assigned_staff_id'),
-                data.get('scheduled_date'),
-                data.get('service_notes')
-            ))
-            conn.commit()
-            service_id = cursor.lastrowid
-            return jsonify({"id": service_id, "message": "Service ticket created successfully"})
-    except Exception as e:
-        print(f"Database error in create_service: {e}")
-        return jsonify({"message": "Failed to create service ticket"}), 500
 
 @app.route('/api/v1/services/<int:service_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
 @app.route('/services/<int:service_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])  # Fallback route
