@@ -140,6 +140,16 @@ def db_test():
     except Exception as e:
         return jsonify({"status": "failed", "error": str(e)})
 
+@app.route('/db-connection-test')
+def db_connection_test():
+    """Test raw database connection with detailed error info"""
+    try:
+        connection = pymysql.connect(**PRIMARY_DB_CONFIG)
+        connection.close()
+        return jsonify({"status": "success", "message": "Connected to Aiven database"})
+    except Exception as e:
+        return jsonify({"status": "failed", "error": str(e), "config": {k: v for k, v in PRIMARY_DB_CONFIG.items() if k != 'password'}})
+
 @app.route('/')
 def read_root():
     return jsonify({
