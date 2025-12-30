@@ -17,6 +17,7 @@ CORS(app, origins=[
     "https://ostrich-mobility-webapp-frontend-96yh4lvso.vercel.app",
     "https://ostrich-mobility-webapp-frontend-8fcycjeoo.vercel.app",
     "https://ostrich-mobility-webapp-frontend-iw0b0ulsl.vercel.app",
+    "https://ostrich-mobility-webapp-frontend-8hy7as2t9.vercel.app",
     "http://localhost:3000"
 ], supports_credentials=True)
 
@@ -143,9 +144,14 @@ def manifest():
 # Auth endpoints
 @app.route('/api/v1/auth/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    # Handle both JSON and form data
+    if request.content_type == 'application/json':
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+    else:
+        username = request.form.get('username')
+        password = request.form.get('password')
     
     try:
         with get_db_connection() as conn:
