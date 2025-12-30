@@ -18,7 +18,8 @@ CORS(app, origins=[
     "https://ostrich-mobility-webapp-frontend-8fcycjeoo.vercel.app",
     "https://ostrich-mobility-webapp-frontend-iw0b0ulsl.vercel.app",
     "https://ostrich-mobility-webapp-frontend-8hy7as2t9.vercel.app",
-    "https://ostrich-mobility-webapp-frontend-8ielly0eh.vercel.app",
+    "https://ostrich-mobility-webapp-frontend.vercel.app",
+    "https://ostrich-mobility-webapp-frontend.vercel.app",
     "http://localhost:3000"
 ], supports_credentials=True)
 
