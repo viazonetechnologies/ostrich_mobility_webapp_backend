@@ -10,6 +10,7 @@ allowed_origins = [
     "http://localhost:3000",
     "https://ostrich-mobility-webapp-frontend-iw0b0ulsl.vercel.app",
     "https://ostrich-mobility-webapp-frontend-ez5dm6l81.vercel.app",
+    "https://ostrich-mobility-webapp-frontend-8hy7as2t9.vercel.app",
     "https://*.vercel.app",
     os.getenv("FRONTEND_URL", "")
 ]
