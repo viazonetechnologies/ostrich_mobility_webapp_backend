@@ -65,10 +65,12 @@ def get_db_connection():
 
 # In-memory storage for demo
 users = {
-    "admin": {"id": 1, "username": "admin", "password": "admin123", "role": "admin"},
-    "manager": {"id": 2, "username": "manager", "password": "manager123", "role": "manager"},
-    "user": {"id": 3, "username": "user", "password": "user123", "role": "user"},
-    "demo": {"id": 4, "username": "demo", "password": "demo123", "role": "user"}
+    "superadmin": {"id": 1, "username": "superadmin", "password": "super123", "role": "super_admin"},
+    "admin": {"id": 2, "username": "admin", "password": "admin123", "role": "admin"},
+    "regional_office": {"id": 3, "username": "regional_office", "password": "regional123", "role": "regional_office"},
+    "manager": {"id": 4, "username": "manager", "password": "manager123", "role": "manager"},
+    "sales_executive": {"id": 5, "username": "sales_executive", "password": "sales123", "role": "sales_executive"},
+    "service_staff": {"id": 6, "username": "service_staff", "password": "service123", "role": "service_staff"}
 }
 customers = {}
 products = []
@@ -1318,13 +1320,25 @@ def read_users(current_user):
             if conn is None:
                 # Fallback data
                 return jsonify([{
-                    "id": 1,
-                    "username": "admin",
-                    "email": "admin@ostrich.com",
-                    "first_name": "Admin",
-                    "last_name": "User",
-                    "role": "admin",
-                    "is_active": True
+                    "id": 1, "username": "admin", "email": "admin@ostrich.com", "first_name": "Admin", "last_name": "User", "role": "admin", "phone": "9876543210", "region": "All", "is_active": True, "last_login": "2025-12-30T10:00:00", "created_at": "2025-01-01T00:00:00"
+                }, {
+                    "id": 2, "username": "manager", "email": "manager@ostrich.com", "first_name": "Sales", "last_name": "Manager", "role": "manager", "phone": "9876543211", "region": "West", "is_active": True, "last_login": "2025-12-29T15:30:00", "created_at": "2025-01-15T00:00:00"
+                }, {
+                    "id": 3, "username": "user", "email": "user@ostrich.com", "first_name": "Regular", "last_name": "User", "role": "user", "phone": "9876543212", "region": "North", "is_active": True, "last_login": "2025-12-28T09:15:00", "created_at": "2025-02-01T00:00:00"
+                }, {
+                    "id": 4, "username": "demo", "email": "demo@ostrich.com", "first_name": "Demo", "last_name": "User", "role": "user", "phone": "9876543213", "region": "South", "is_active": True, "last_login": "2025-12-27T14:20:00", "created_at": "2025-02-15T00:00:00"
+                }, {
+                    "id": 5, "username": "sales", "email": "sales@ostrich.com", "first_name": "Sales", "last_name": "Executive", "role": "sales", "phone": "9876543214", "region": "East", "is_active": True, "last_login": "2025-12-26T11:45:00", "created_at": "2025-03-01T00:00:00"
+                }, {
+                    "id": 6, "username": "service", "email": "service@ostrich.com", "first_name": "Service", "last_name": "Engineer", "role": "service", "phone": "9876543215", "region": "Central", "is_active": True, "last_login": "2025-12-25T16:30:00", "created_at": "2025-03-15T00:00:00"
+                }, {
+                    "id": 7, "username": "technician", "email": "tech@ostrich.com", "first_name": "Field", "last_name": "Technician", "role": "technician", "phone": "9876543216", "region": "West", "is_active": True, "last_login": "2025-12-24T08:15:00", "created_at": "2025-04-01T00:00:00"
+                }, {
+                    "id": 8, "username": "supervisor", "email": "supervisor@ostrich.com", "first_name": "Team", "last_name": "Supervisor", "role": "supervisor", "phone": "9876543217", "region": "North", "is_active": True, "last_login": "2025-12-23T13:50:00", "created_at": "2025-04-15T00:00:00"
+                }, {
+                    "id": 9, "username": "operator", "email": "operator@ostrich.com", "first_name": "System", "last_name": "Operator", "role": "operator", "phone": "9876543218", "region": "South", "is_active": True, "last_login": "2025-12-22T10:25:00", "created_at": "2025-05-01T00:00:00"
+                }, {
+                    "id": 10, "username": "guest", "email": "guest@ostrich.com", "first_name": "Guest", "last_name": "User", "role": "guest", "phone": "9876543219", "region": "All", "is_active": False, "last_login": "2025-12-21T17:10:00", "created_at": "2025-05-15T00:00:00"
                 }])
             
             cursor = conn.cursor()
