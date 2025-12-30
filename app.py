@@ -144,68 +144,23 @@ def manifest():
 # Auth endpoints
 @app.route('/api/v1/auth/login', methods=['POST'])
 def login():
-    # Handle both JSON and form data
-    if request.content_type == 'application/json':
-        data = request.get_json()
-        username = data.get('username')
-        password = data.get('password')
-    else:
-        username = request.form.get('username')
-        password = request.form.get('password')
+    # Handle form data from frontend
+    username = request.form.get('username')
+    password = request.form.get('password')
     
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                # Fallback to hardcoded admin
-                if username == "admin" and password == "admin123":
-                    access_token = create_access_token({"sub": "1"})
-                    return jsonify({
-                        "access_token": access_token,
-                        "token_type": "bearer",
-                        "user": {
-                            "id": 1,
-                            "username": "admin",
-                            "role": "admin"
-                        }
-                    })
-                return jsonify({"detail": "Invalid credentials"}), 401
-            
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, username, password_hash, role, first_name, last_name FROM users WHERE username = %s", (username,))
-            user = cursor.fetchone()
-            
-            if user:
-                # For demo, check if password matches username (since we don't have actual password hashes)
-                if password == username or (username == "superadmin" and password == "superadmin123") or (username == "admin" and password == "admin123"):
-                    access_token = create_access_token({"sub": str(user[0])})
-                    return jsonify({
-                        "access_token": access_token,
-                        "token_type": "bearer",
-                        "user": {
-                            "id": user[0],
-                            "username": user[1],
-                            "role": user[3],
-                            "first_name": user[4],
-                            "last_name": user[5]
-                        }
-                    })
-            
-            return jsonify({"detail": "Invalid credentials"}), 401
-    except Exception as e:
-        print(f"Database error in login: {e}")
-        # Fallback to hardcoded admin
-        if username == "admin" and password == "admin123":
-            access_token = create_access_token({"sub": "1"})
-            return jsonify({
-                "access_token": access_token,
-                "token_type": "bearer",
-                "user": {
-                    "id": 1,
-                    "username": "admin",
-                    "role": "admin"
-                }
-            })
-        return jsonify({"detail": "Invalid credentials"}), 401
+    # Fallback to hardcoded admin for demo
+    if username == "admin" and password == "admin123":
+        access_token = create_access_token({"sub": "1"})
+        return jsonify({
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": 1,
+                "username": "admin",
+                "role": "admin"
+            }
+        })
+    return jsonify({"detail": "Invalid credentials"}), 401
 
 @app.route('/api/v1/auth/simple-login', methods=['POST'])
 def simple_login():
