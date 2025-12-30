@@ -836,66 +836,6 @@ def handle_sale_individual(sale_id, current_user):
     
     elif request.method == 'DELETE':
         return jsonify({"message": "Sale deleted successfully"})
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                # Fallback data
-                if sale_id == 1:
-                    return jsonify({
-                        "id": 1,
-                        "sale_number": "SAL000001",
-                        "customer_id": 1,
-                        "sale_date": "2025-12-03",
-                        "total_amount": 30000.0,
-                        "discount_percentage": 5.0,
-                        "discount_amount": 1500.0,
-                        "final_amount": 28500.0,
-                        "payment_status": "paid",
-                        "delivery_status": "delivered",
-                        "delivery_date": "2025-12-05",
-                        "delivery_address": "123 Main St, Mumbai",
-                        "notes": "Urgent delivery",
-                        "customer_name": "John Doe",
-                        "created_by_name": "Admin User",
-                        "created_at": "2025-12-03T10:00:00",
-                        "items": []
-                    })
-                return jsonify({"detail": "Sale not found"}), 404
-            
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM sales WHERE id = %s", (sale_id,))
-            sale = cursor.fetchone()
-            
-            if not sale:
-                return jsonify({"detail": "Sale not found"}), 404
-            
-            return jsonify({
-                "id": sale[0],
-                "sale_number": sale[1],
-                "customer_id": sale[2],
-                "sale_date": str(sale[3]) if len(sale) > 3 else None,
-                "total_amount": float(sale[4]) if len(sale) > 4 else 0.0,
-                "discount_percentage": float(sale[5]) if len(sale) > 5 else 0.0,
-                "discount_amount": float(sale[6]) if len(sale) > 6 else 0.0,
-                "final_amount": float(sale[7]) if len(sale) > 7 else 0.0,
-                "payment_status": sale[8] if len(sale) > 8 else "pending",
-                "delivery_status": sale[9] if len(sale) > 9 else "pending",
-                "delivery_date": str(sale[10]) if len(sale) > 10 and sale[10] else None,
-                "delivery_address": sale[11] if len(sale) > 11 else None,
-                "notes": sale[12] if len(sale) > 12 else None,
-                "customer_name": sale[13] if len(sale) > 13 else None,
-                "created_by_name": sale[14] if len(sale) > 14 else None,
-                "created_at": str(sale[15]) if len(sale) > 15 else None,
-                "items": []
-            })
-    except Exception as e:
-        print(f"Database error in read_sale: {e}")
-        if sale_id == 1:
-            return jsonify({
-                "id": 1,
-                "sale_number": "SAL000001",
-                "customer_id": 1,
-                "sale_date": "2025-12-03",
                 "total_amount": 30000.0,
                 "discount_percentage": 5.0,
                 "discount_amount": 1500.0,
