@@ -53,22 +53,14 @@ FALLBACK_DB_CONFIG = {
 def get_db_connection():
     connection = None
     try:
-        # Try Aiven database first
-        print(f"Attempting connection to {PRIMARY_DB_CONFIG['host']}:{PRIMARY_DB_CONFIG['port']}")
+        # Use Aiven database only
+        print(f"Connecting to Aiven: {PRIMARY_DB_CONFIG['host']}:{PRIMARY_DB_CONFIG['port']}")
         connection = pymysql.connect(**PRIMARY_DB_CONFIG)
         print("Connected to Aiven database")
         yield connection
     except Exception as e:
         print(f"Aiven connection failed: {e}")
-        try:
-            # Fallback to localhost
-            print(f"Trying localhost fallback...")
-            connection = pymysql.connect(**FALLBACK_DB_CONFIG)
-            print("Connected to localhost database")
-            yield connection
-        except Exception as e2:
-            print(f"Localhost connection also failed: {e2}")
-            yield None
+        yield None
     finally:
         if connection:
             try:
