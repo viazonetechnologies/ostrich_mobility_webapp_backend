@@ -35,8 +35,11 @@ PRIMARY_DB_CONFIG = {
     'password': os.getenv('DB_PASSWORD', 'AVNS_c985UhSyW3FZhUdTmI8'),
     'database': os.getenv('DB_NAME', 'ostrich'),
     'port': int(os.getenv('DB_PORT', 16599)),
-    'ssl_disabled': False,
-    'charset': 'utf8mb4'
+    'charset': 'utf8mb4',
+    'ssl': {'ssl_disabled': False},
+    'connect_timeout': 60,
+    'read_timeout': 60,
+    'write_timeout': 60
 }
 
 FALLBACK_DB_CONFIG = {
