@@ -52,9 +52,9 @@ FALLBACK_DB_CONFIG = {
 def get_db_connection():
     connection = None
     try:
-        # Skip primary, use fallback directly
-        connection = pymysql.connect(**FALLBACK_DB_CONFIG)
-        print("Connected to local database")
+        # Try primary Aiven database
+        connection = pymysql.connect(**PRIMARY_DB_CONFIG)
+        print("Connected to Aiven database")
         yield connection
     except Exception as e:
         print(f"Database connection failed: {e}")
