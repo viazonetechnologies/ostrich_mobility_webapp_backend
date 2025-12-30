@@ -20,8 +20,9 @@ CORS(app, origins=[
     "https://ostrich-mobility-webapp-frontend-8hy7as2t9.vercel.app",
     "https://ostrich-mobility-webapp-frontend.vercel.app",
     "https://ostrich-mobility-webapp-frontend.vercel.app",
-    "http://localhost:3000"
-], supports_credentials=True)
+    "http://localhost:3000",
+    "*"  # Allow all origins for debugging
+], supports_credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allow_headers=['Content-Type', 'Authorization'])
 
 # Configuration
 SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
