@@ -71,7 +71,10 @@ def get_db_connection():
             yield None
     finally:
         if connection:
-            connection.close()
+            try:
+                connection.close()
+            except:
+                pass
 
 # In-memory storage for demo
 users = {
