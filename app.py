@@ -836,21 +836,6 @@ def handle_sale_individual(sale_id, current_user):
     
     elif request.method == 'DELETE':
         return jsonify({"message": "Sale deleted successfully"})
-                "total_amount": 30000.0,
-                "discount_percentage": 5.0,
-                "discount_amount": 1500.0,
-                "final_amount": 28500.0,
-                "payment_status": "paid",
-                "delivery_status": "delivered",
-                "delivery_date": "2025-12-05",
-                "delivery_address": "123 Main St, Mumbai",
-                "notes": "Urgent delivery",
-                "customer_name": "John Doe",
-                "created_by_name": "Admin User",
-                "created_at": "2025-12-03T10:00:00",
-                "items": []
-            })
-        return jsonify({"detail": "Sale not found"}), 404
 
 @app.route('/api/v1/sales/<int:sale_id>', methods=['PUT'])
 @token_required
@@ -1058,53 +1043,6 @@ def handle_service_individual(service_id, current_user):
     
     elif request.method == 'DELETE':
         return jsonify({"message": "Service deleted successfully"})
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                # Fallback data
-                return jsonify({
-                    "id": service_id,
-                    "ticket_number": "TKT000001",
-                    "customer_id": 1,
-                    "product_serial_number": "SN001",
-                    "issue_description": "Motor not starting",
-                    "status": "COMPLETED",
-                    "priority": "HIGH",
-                    "scheduled_date": "2025-12-08",
-                    "created_at": "2025-12-07"
-                })
-            
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM service_tickets WHERE id = %s", (service_id,))
-            service = cursor.fetchone()
-            
-            if not service:
-                return jsonify({"detail": "Service not found"}), 404
-            
-            return jsonify({
-                "id": service[0],
-                "ticket_number": service[1],
-                "customer_id": service[2],
-                "product_serial_number": service[3] if len(service) > 3 else None,
-                "issue_description": service[4] if len(service) > 4 else None,
-                "status": service[5] if len(service) > 5 else "OPEN",
-                "priority": service[6] if len(service) > 6 else "MEDIUM",
-                "scheduled_date": str(service[7]) if len(service) > 7 else None,
-                "created_at": str(service[8]) if len(service) > 8 else None
-            })
-    except Exception as e:
-        print(f"Database error in read_service: {e}")
-        return jsonify({
-            "id": service_id,
-            "ticket_number": "TKT000001",
-            "customer_id": 1,
-            "product_serial_number": "SN001",
-            "issue_description": "Motor not starting",
-            "status": "COMPLETED",
-            "priority": "HIGH",
-            "scheduled_date": "2025-12-08",
-            "created_at": "2025-12-07"
-        })
 
 @app.route('/api/v1/services/<int:service_id>', methods=['PUT'])
 @token_required
@@ -1304,50 +1242,6 @@ def handle_enquiry_individual(enquiry_id, current_user):
     
     elif request.method == 'DELETE':
         return jsonify({"message": "Enquiry deleted successfully"})
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                # Fallback data
-                return jsonify({
-                    "id": enquiry_id,
-                    "enquiry_number": "ENQ000001",
-                    "customer_name": "Jane Smith",
-                    "email": "jane@example.com",
-                    "phone": "9876543211",
-                    "product_interest": "5HP Motor",
-                    "status": "open",
-                    "created_at": "2025-12-08"
-                })
-            
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM enquiries WHERE id = %s", (enquiry_id,))
-            enquiry = cursor.fetchone()
-            
-            if not enquiry:
-                return jsonify({"detail": "Enquiry not found"}), 404
-            
-            return jsonify({
-                "id": enquiry[0],
-                "enquiry_number": enquiry[1],
-                "customer_name": enquiry[2] if len(enquiry) > 2 else None,
-                "email": enquiry[3] if len(enquiry) > 3 else None,
-                "phone": enquiry[4] if len(enquiry) > 4 else None,
-                "product_interest": enquiry[5] if len(enquiry) > 5 else None,
-                "status": enquiry[6] if len(enquiry) > 6 else "open",
-                "created_at": str(enquiry[7]) if len(enquiry) > 7 else None
-            })
-    except Exception as e:
-        print(f"Database error in read_enquiry: {e}")
-        return jsonify({
-            "id": enquiry_id,
-            "enquiry_number": "ENQ000001",
-            "customer_name": "Jane Smith",
-            "email": "jane@example.com",
-            "phone": "9876543211",
-            "product_interest": "5HP Motor",
-            "status": "open",
-            "created_at": "2025-12-08"
-        })
 
 @app.route('/api/v1/enquiries/<int:enquiry_id>', methods=['PUT'])
 @token_required
@@ -1527,51 +1421,6 @@ def handle_user_individual(user_id, current_user):
     
     elif request.method == 'DELETE':
         return jsonify({"message": "User deleted successfully"})
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                # Fallback data
-                return jsonify({
-                    "id": user_id,
-                    "username": "admin",
-                    "email": "admin@ostrich.com",
-                    "first_name": "Admin",
-                    "last_name": "User",
-                    "role": "admin",
-                    "is_active": True
-                })
-            
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, username, email, password_hash, role, first_name, last_name, phone, region, is_active, last_login FROM users WHERE id = %s", (user_id,))
-            user = cursor.fetchone()
-            
-            if not user:
-                return jsonify({"detail": "User not found"}), 404
-            
-            return jsonify({
-                "id": user[0],
-                "username": user[1],
-                "email": user[2],
-                "role": user[4],
-                "first_name": user[5],
-                "last_name": user[6],
-                "phone": user[7],
-                "region": user[8],
-                "is_active": bool(user[9]),
-                "last_login": str(user[10]) if user[10] else None,
-                "created_at": None
-            })
-    except Exception as e:
-        print(f"Database error in read_user: {e}")
-        return jsonify({
-            "id": user_id,
-            "username": "admin",
-            "email": "admin@ostrich.com",
-            "first_name": "Admin",
-            "last_name": "User",
-            "role": "admin",
-            "is_active": True
-        })
 
 @app.route('/api/v1/users/<int:user_id>', methods=['PUT'])
 @token_required
