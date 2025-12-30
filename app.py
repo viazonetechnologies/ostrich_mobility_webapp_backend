@@ -292,6 +292,7 @@ def reset_password():
 
 # Customers endpoints
 @app.route('/api/v1/customers/', methods=['GET'])
+@app.route('/customers/', methods=['GET'])  # Fallback route
 @token_required
 def read_customers(current_user):
     try:
@@ -328,6 +329,7 @@ def read_customers(current_user):
         return jsonify([])
 
 @app.route('/api/v1/customers/', methods=['POST'])
+@app.route('/customers/', methods=['POST'])  # Fallback route
 @token_required
 def create_customer(current_user):
     data = request.get_json()
@@ -844,6 +846,7 @@ def delete_sale(sale_id, current_user):
 
 # Services endpoints
 @app.route('/api/v1/services/', methods=['GET'])
+@app.route('/services/', methods=['GET'])  # Fallback route
 @token_required
 def read_services(current_user):
     try:
@@ -1027,6 +1030,7 @@ def delete_service(service_id, current_user):
 
 # Enquiries endpoints
 @app.route('/api/v1/enquiries/', methods=['GET'])
+@app.route('/enquiries/', methods=['GET'])  # Fallback route
 @token_required
 def read_enquiries(current_user):
     try:
@@ -1886,6 +1890,7 @@ def read_notifications(current_user):
         }])
 
 @app.route('/api/v1/notifications/unread-count', methods=['GET'])
+@app.route('/notifications/unread-count', methods=['GET'])  # Fallback route
 @token_required
 def get_unread_notifications_count(current_user):
     try:
