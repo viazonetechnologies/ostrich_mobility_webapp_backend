@@ -523,15 +523,25 @@ def read_products(current_user):
         print(f"Database error: {e}")
         print("Returning fallback data")
         return jsonify([{
-            "id": 1,
-            "product_code": "PRD000001",
-            "name": "3HP Single Phase Motor",
-            "model": "OST-3HP-SP",
-            "category": "Motors",
-            "price": 15000.0,
-            "warranty_period": 24,
-            "description": "High efficiency single phase motor",
-            "image_url": "https://via.placeholder.com/300x200"
+            "id": 1, "product_code": "PRD000001", "name": "3HP Single Phase Motor", "description": "High efficiency single phase motor", "category": "Motors", "specifications": "3HP, 1440 RPM, Single Phase", "warranty_period": 24, "price": 15000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 2, "product_code": "PRD000002", "name": "5HP Three Phase Motor", "description": "Industrial grade three phase motor", "category": "Motors", "specifications": "5HP, 1440 RPM, Three Phase", "warranty_period": 36, "price": 25000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 3, "product_code": "PRD000003", "name": "Water Pump 1HP", "description": "Centrifugal water pump", "category": "Pumps", "specifications": "1HP, 2850 RPM, Cast Iron", "warranty_period": 12, "price": 8000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 4, "product_code": "PRD000004", "name": "Submersible Pump 2HP", "description": "Deep well submersible pump", "category": "Pumps", "specifications": "2HP, Stainless Steel", "warranty_period": 18, "price": 18000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 5, "product_code": "PRD000005", "name": "7.5HP Industrial Motor", "description": "Heavy duty industrial motor", "category": "Motors", "specifications": "7.5HP, 1440 RPM, Three Phase", "warranty_period": 36, "price": 35000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 6, "product_code": "PRD000006", "name": "Pressure Pump 3HP", "description": "High pressure water pump", "category": "Pumps", "specifications": "3HP, High Pressure, Cast Iron", "warranty_period": 24, "price": 22000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 7, "product_code": "PRD000007", "name": "Single Phase 1HP Motor", "description": "Compact single phase motor", "category": "Motors", "specifications": "1HP, 1440 RPM, Single Phase", "warranty_period": 12, "price": 8500.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 8, "product_code": "PRD000008", "name": "Jet Pump 0.5HP", "description": "Self priming jet pump", "category": "Pumps", "specifications": "0.5HP, Self Priming", "warranty_period": 12, "price": 6500.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 9, "product_code": "PRD000009", "name": "10HP Three Phase Motor", "description": "High power industrial motor", "category": "Motors", "specifications": "10HP, 1440 RPM, Three Phase", "warranty_period": 36, "price": 45000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
+        }, {
+            "id": 10, "product_code": "PRD000010", "name": "Booster Pump 1.5HP", "description": "Water pressure booster pump", "category": "Pumps", "specifications": "1.5HP, Pressure Booster", "warranty_period": 18, "price": 12000.0, "image_url": "https://via.placeholder.com/300x200", "is_active": True
         }])
 
 @app.route('/api/v1/products/', methods=['POST'])
@@ -1995,7 +2005,7 @@ def get_unread_notifications_count(current_user):
     try:
         with get_db_connection() as conn:
             if conn is None:
-                return jsonify({"unread_count": 3})
+                return jsonify({"unread_count": 7})
             
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM notifications WHERE is_read = 0")
