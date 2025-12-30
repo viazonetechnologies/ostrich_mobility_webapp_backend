@@ -36,8 +36,7 @@ PRIMARY_DB_CONFIG = {
     'database': os.getenv('DB_NAME', 'ostrich'),
     'port': int(os.getenv('DB_PORT', 16599)),
     'charset': 'utf8mb4',
-    'ssl_ca': None,
-    'ssl_disabled': False,
+    'ssl': {'ssl_mode': 'REQUIRED'},
     'connect_timeout': 30
 }
 
