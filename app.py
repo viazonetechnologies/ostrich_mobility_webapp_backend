@@ -184,9 +184,16 @@ def login():
         response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
         return response
     
-    # Handle form data from frontend
-    username = request.form.get('username')
-    password = request.form.get('password')
+    # Debug logging
+    print(f"Login attempt - Content-Type: {request.content_type}")
+    print(f"Form data: {request.form}")
+    print(f"JSON data: {request.get_json(silent=True)}")
+    
+    # Handle both form data and JSON data
+    username = request.form.get('username') or (request.get_json(silent=True) or {}).get('username')
+    password = request.form.get('password') or (request.get_json(silent=True) or {}).get('password')
+    
+    print(f"Extracted username: '{username}', password: '{password}'")
     
     # Fallback to hardcoded admin for demo
     if username == "admin" and password == "admin123":
