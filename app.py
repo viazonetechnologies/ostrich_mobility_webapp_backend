@@ -33,7 +33,7 @@ PRIMARY_DB_CONFIG = {
     'host': os.getenv('DB_HOST', 'mysql-ostrich-tviazone-5922.i.aivencloud.com'),
     'user': os.getenv('DB_USER', 'avnadmin'),
     'password': os.getenv('DB_PASSWORD', 'AVNS_c985UhSyW3FZhUdTmI8'),
-    'database': os.getenv('DB_NAME', 'ostrich'),
+    'database': os.getenv('DB_NAME', 'defaultdb'),
     'port': int(os.getenv('DB_PORT', 16599)),
     'charset': 'utf8mb4',
     'ssl_disabled': False,
