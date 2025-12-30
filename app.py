@@ -144,6 +144,27 @@ def read_root():
 def manifest():
     return app.send_static_file('manifest.json')
 
+@app.route('/api/v1')
+def api_info():
+    return jsonify({
+        "message": "Ostrich Product & Service Management API v1",
+        "version": "1.0.0",
+        "endpoints": {
+            "auth": "/api/v1/auth/login",
+            "customers": "/api/v1/customers/",
+            "products": "/api/v1/products/",
+            "sales": "/api/v1/sales/",
+            "services": "/api/v1/services/",
+            "enquiries": "/api/v1/enquiries/",
+            "users": "/api/v1/users/",
+            "reports": "/api/v1/reports/",
+            "dispatch": "/api/v1/dispatch/",
+            "notifications": "/api/v1/notifications/",
+            "regions": "/api/v1/regions/"
+        },
+        "status": "active"
+    })
+
 # Auth endpoints
 @app.route('/api/v1/auth/login', methods=['POST', 'OPTIONS'])
 @app.route('/auth/login', methods=['POST', 'OPTIONS'])  # Fallback route
