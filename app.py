@@ -9,7 +9,11 @@ import os
 from contextlib import contextmanager
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    "https://ostrich-mobility-webapp-frontend-8fcycjeoo.vercel.app",
+    "https://ostrich-mobility-webapp-frontend-iw0b0ulsl.vercel.app",
+    "http://localhost:3000"
+], supports_credentials=True)
 
 # Configuration
 SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
@@ -126,6 +130,10 @@ def read_root():
         "version": "1.0.0",
         "docs": "/docs"
     })
+
+@app.route('/manifest.json')
+def manifest():
+    return app.send_static_file('manifest.json')
 
 # Auth endpoints
 @app.route('/api/v1/auth/login', methods=['POST'])
@@ -2181,4 +2189,5 @@ def test_products():
         return jsonify({"status": "error", "message": str(e)})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    port = int(os.getenv('PORT', 8000))
+    app.run(host='0.0.0.0', port=port, debug=False)

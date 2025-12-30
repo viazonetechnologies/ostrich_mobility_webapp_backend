@@ -51,25 +51,11 @@ def read_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    from app.models.sales import SaleItem
-    from sqlalchemy import func
-    
     query = db.query(Product)
     if category_id:
         query = query.filter(Product.category_id == category_id)
     
     products = query.offset(skip).limit(limit).all()
-    
-    # Add sales information to each product
-    for product in products:
-        sales_info = db.query(
-            func.count(SaleItem.id).label('total_sales'),
-            func.sum(SaleItem.quantity).label('total_quantity')
-        ).filter(SaleItem.product_id == product.id).first()
-        
-        product.total_sales = sales_info.total_sales or 0
-        product.total_quantity = sales_info.total_quantity or 0
-    
     return products
 
 @router.post("/", response_model=ProductResponse)

@@ -1,13 +1,23 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import os
 
 app = FastAPI()
 
+# Allow your Vercel domain
+allowed_origins = [
+    "http://localhost:3000",
+    "https://ostrich-mobility-webapp-frontend-iw0b0ulsl.vercel.app",
+    "https://ostrich-mobility-webapp-frontend-ez5dm6l81.vercel.app",
+    "https://*.vercel.app",
+    os.getenv("FRONTEND_URL", "")
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -53,4 +63,5 @@ def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8003)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

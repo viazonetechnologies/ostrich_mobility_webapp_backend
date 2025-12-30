@@ -69,9 +69,6 @@ class ProductResponse(ProductBase):
     created_at: datetime
     updated_at: datetime
     category: Optional[ProductCategoryResponse] = None
-    total_sales: Optional[int] = 0
-    total_quantity: Optional[int] = 0
-    purchased_quantity: Optional[int] = 0
 
     class Config:
         from_attributes = True
