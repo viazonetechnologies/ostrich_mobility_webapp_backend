@@ -144,8 +144,16 @@ def manifest():
     return app.send_static_file('manifest.json')
 
 # Auth endpoints
-@app.route('/api/v1/auth/login', methods=['POST'])
+@app.route('/api/v1/auth/login', methods=['POST', 'OPTIONS'])
 def login():
+    if request.method == 'OPTIONS':
+        # Handle preflight request
+        response = jsonify({})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        return response
+    
     # Handle form data from frontend
     username = request.form.get('username')
     password = request.form.get('password')
