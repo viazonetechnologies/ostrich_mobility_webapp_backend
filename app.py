@@ -162,8 +162,13 @@ def api_info():
             "notifications": "/api/v1/notifications/",
             "regions": "/api/v1/regions/"
         },
-        "status": "active"
+        "status": "active",
+        "timestamp": "2025-12-30T13:30:00Z"
     })
+
+@app.route('/api/v1/')
+def api_info_slash():
+    return api_info()
 
 # Auth endpoints
 @app.route('/api/v1/auth/login', methods=['POST', 'OPTIONS'])
