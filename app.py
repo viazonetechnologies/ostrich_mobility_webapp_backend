@@ -426,89 +426,86 @@ def create_customer(current_user):
 def bulk_upload_customers(current_user):
     return jsonify({"message": "Bulk upload completed", "count": 0})
 
-@app.route('/api/v1/customers/<int:customer_id>', methods=['GET', 'OPTIONS'])
-@app.route('/customers/<int:customer_id>', methods=['GET', 'OPTIONS'])  # Fallback route
+@app.route('/api/v1/customers/<int:customer_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/customers/<int:customer_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])  # Fallback route
 @token_required
-def read_customer(customer_id, current_user):
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                return jsonify({"detail": "Customer not found"}), 404
-            
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM customers WHERE id = %s", (customer_id,))
-            customer = cursor.fetchone()
-            
-            if not customer:
-                return jsonify({"detail": "Customer not found"}), 404
-            
-            return jsonify({
-                "id": customer[0],
-                "customer_code": customer[1],
-                "customer_type": customer[2],
-                "company_name": customer[3],
-                "contact_person": customer[4],
-                "email": customer[5],
-                "phone": customer[6],
-                "address": customer[7],
-                "city": customer[8],
-                "state": customer[9],
-                "country": customer[10],
-                "pin_code": customer[11],
-                "created_at": str(customer[17]) if len(customer) > 17 else None
-            })
-    except Exception as e:
-        print(f"Database error in read_customer: {e}")
-        return jsonify({"detail": "Customer not found"}), 404
-
-@app.route('/api/v1/customers/<int:customer_id>', methods=['PUT'])
-@token_required
-def update_customer(customer_id, current_user):
-    data = request.get_json()
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                return jsonify({"message": "Customer updated successfully (fallback)", "id": customer_id})
-            
-            cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE customers SET customer_type=%s, company_name=%s, contact_person=%s,
-                                   email=%s, phone=%s, address=%s, city=%s, state=%s, country=%s, pin_code=%s
-                WHERE id=%s
-            """, (
-                data.get('customer_type', 'B2B'),
-                data.get('company_name', 'Updated Company'),
-                data.get('contact_person', 'Contact Person'),
-                data.get('email', 'email@example.com'),
-                data.get('phone', '1234567890'),
-                data.get('address', 'Address'),
-                data.get('city', 'City'),
-                data.get('state', 'State'),
-                data.get('country', 'India'),
-                data.get('pin_code', '123456'),
-                customer_id
-            ))
-            conn.commit()
-            return jsonify({"message": "Customer updated successfully", "id": customer_id})
-    except Exception as e:
-        print(f"Database error in update_customer: {e}")
-        return jsonify({"message": "Customer updated successfully (fallback)", "id": customer_id})
-
-@app.route('/api/v1/customers/<int:customer_id>', methods=['DELETE'])
-@token_required
-def delete_customer(customer_id, current_user):
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                return jsonify({"message": "Database connection failed"}), 500
-            
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM customers WHERE id = %s", (customer_id,))
-            conn.commit()
-            return jsonify({"message": "Customer deleted successfully"})
-    except Exception as e:
-        print(f"Database error in delete_customer: {e}")
-        return jsonify({"message": "Failed to delete customer"}), 500
+def handle_customer(customer_id, current_user):
+    if request.method == 'GET':
+        try:
+            with get_db_connection() as conn:
+                if conn is None:
+                    return jsonify({"detail": "Customer not found"}), 404
+                
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM customers WHERE id = %s", (customer_id,))
+                customer = cursor.fetchone()
+                
+                if not customer:
+                    return jsonify({"detail": "Customer not found"}), 404
+                
+                return jsonify({
+                    "id": customer[0],
+                    "customer_code": customer[1],
+                    "customer_type": customer[2],
+                    "company_name": customer[3],
+                    "contact_person": customer[4],
+                    "email": customer[5],
+                    "phone": customer[6],
+                    "address": customer[7],
+                    "city": customer[8],
+                    "state": customer[9],
+                    "country": customer[10],
+                    "pin_code": customer[11],
+                    "created_at": str(customer[17]) if len(customer) > 17 else None
+                })
+        except Exception as e:
+            print(f"Database error in read_customer: {e}")
+            return jsonify({"detail": "Customer not found"}), 404
+    
+    elif request.method == 'PUT':
+        data = request.get_json()
+        try:
+            with get_db_connection() as conn:
+                if conn is None:
+                    return jsonify({"message": "Customer updated successfully (fallback)", "id": customer_id})
+                
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE customers SET customer_type=%s, company_name=%s, contact_person=%s,
+                                       email=%s, phone=%s, address=%s, city=%s, state=%s, country=%s, pin_code=%s
+                    WHERE id=%s
+                """, (
+                    data.get('customer_type', 'B2B'),
+                    data.get('company_name', 'Updated Company'),
+                    data.get('contact_person', 'Contact Person'),
+                    data.get('email', 'email@example.com'),
+                    data.get('phone', '1234567890'),
+                    data.get('address', 'Address'),
+                    data.get('city', 'City'),
+                    data.get('state', 'State'),
+                    data.get('country', 'India'),
+                    data.get('pin_code', '123456'),
+                    customer_id
+                ))
+                conn.commit()
+                return jsonify({"message": "Customer updated successfully", "id": customer_id})
+        except Exception as e:
+            print(f"Database error in update_customer: {e}")
+            return jsonify({"message": "Customer updated successfully (fallback)", "id": customer_id})
+    
+    elif request.method == 'DELETE':
+        try:
+            with get_db_connection() as conn:
+                if conn is None:
+                    return jsonify({"message": "Database connection failed"}), 500
+                
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM customers WHERE id = %s", (customer_id,))
+                conn.commit()
+                return jsonify({"message": "Customer deleted successfully"})
+        except Exception as e:
+            print(f"Database error in delete_customer: {e}")
+            return jsonify({"message": "Failed to delete customer"}), 500
 
 # Products endpoints
 @app.route('/api/v1/products/', methods=['GET'])
@@ -607,60 +604,81 @@ def create_product(current_user):
         print(f"Database error in create_product: {e}")
         return jsonify({"message": "Failed to create product"}), 500
 
-@app.route('/api/v1/products/<int:product_id>')
+@app.route('/api/v1/products/<int:product_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/products/<int:product_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])  # Fallback route
 @token_required
-def read_product(product_id, current_user):
-    product = next((p for p in products if p["id"] == product_id), None)
-    if not product:
-        return jsonify({"detail": "Product not found"}), 404
-    return jsonify(product)
-
-@app.route('/api/v1/products/<int:product_id>', methods=['PUT'])
-@token_required
-def update_product(product_id, current_user):
-    data = request.get_json()
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                return jsonify({"message": "Database connection failed"}), 500
-            
-            cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE products SET name=%s, description=%s, category_id=%s, specifications=%s,
-                                  warranty_period=%s, price=%s, image_url=%s, is_active=%s
-                WHERE id=%s
-            """, (
-                data.get('name'),
-                data.get('description'),
-                data.get('category_id'),
-                data.get('specifications'),
-                data.get('warranty_period'),
-                data.get('price'),
-                data.get('image_url'),
-                data.get('is_active', True),
-                product_id
-            ))
-            conn.commit()
-            return jsonify({"message": "Product updated successfully", "id": product_id})
-    except Exception as e:
-        print(f"Database error in update_product: {e}")
-        return jsonify({"message": "Failed to update product"}), 500
-
-@app.route('/api/v1/products/<int:product_id>', methods=['DELETE'])
-@token_required
-def delete_product(product_id, current_user):
-    try:
-        with get_db_connection() as conn:
-            if conn is None:
-                return jsonify({"message": "Database connection failed"}), 500
-            
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM products WHERE id = %s", (product_id,))
-            conn.commit()
-            return jsonify({"message": "Product deleted successfully"})
-    except Exception as e:
-        print(f"Database error in delete_product: {e}")
-        return jsonify({"message": "Failed to delete product"}), 500
+def handle_product(product_id, current_user):
+    if request.method == 'GET':
+        try:
+            with get_db_connection() as conn:
+                if conn is None:
+                    return jsonify({"detail": "Product not found"}), 404
+                
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM products WHERE id = %s", (product_id,))
+                product = cursor.fetchone()
+                
+                if not product:
+                    return jsonify({"detail": "Product not found"}), 404
+                
+                return jsonify({
+                    "id": product[0],
+                    "product_code": product[1],
+                    "name": product[2],
+                    "description": product[3],
+                    "category": product[4],
+                    "specifications": product[5],
+                    "warranty_period": product[6],
+                    "price": float(product[7]) if product[7] else 0.0,
+                    "image_url": product[8] if product[8] else "https://via.placeholder.com/300x200",
+                    "is_active": bool(product[9])
+                })
+        except Exception as e:
+            print(f"Database error in read_product: {e}")
+            return jsonify({"detail": "Product not found"}), 404
+    
+    elif request.method == 'PUT':
+        data = request.get_json()
+        try:
+            with get_db_connection() as conn:
+                if conn is None:
+                    return jsonify({"message": "Database connection failed"}), 500
+                
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE products SET name=%s, description=%s, category_id=%s, specifications=%s,
+                                      warranty_period=%s, price=%s, image_url=%s, is_active=%s
+                    WHERE id=%s
+                """, (
+                    data.get('name'),
+                    data.get('description'),
+                    data.get('category_id'),
+                    data.get('specifications'),
+                    data.get('warranty_period'),
+                    data.get('price'),
+                    data.get('image_url'),
+                    data.get('is_active', True),
+                    product_id
+                ))
+                conn.commit()
+                return jsonify({"message": "Product updated successfully", "id": product_id})
+        except Exception as e:
+            print(f"Database error in update_product: {e}")
+            return jsonify({"message": "Failed to update product"}), 500
+    
+    elif request.method == 'DELETE':
+        try:
+            with get_db_connection() as conn:
+                if conn is None:
+                    return jsonify({"message": "Database connection failed"}), 500
+                
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM products WHERE id = %s", (product_id,))
+                conn.commit()
+                return jsonify({"message": "Product deleted successfully"})
+        except Exception as e:
+            print(f"Database error in delete_product: {e}")
+            return jsonify({"message": "Failed to delete product"}), 500
 
 @app.route('/api/v1/products/categories/')
 @token_required
@@ -782,9 +800,16 @@ def create_sale(current_user):
         print(f"Database error in create_sale: {e}")
         return jsonify({"message": "Failed to create sale"}), 500
 
-@app.route('/api/v1/sales/<int:sale_id>')
+@app.route('/api/v1/sales/<int:sale_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/sales/<int:sale_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])  # Fallback route
 @token_required
-def read_sale(sale_id, current_user):
+def handle_sale_individual(sale_id, current_user):
+    if request.method == 'GET':
+        return read_sale(sale_id, current_user)
+    elif request.method == 'PUT':
+        return update_sale(sale_id, current_user)
+    elif request.method == 'DELETE':
+        return delete_sale(sale_id, current_user)
     try:
         with get_db_connection() as conn:
             if conn is None:
@@ -1031,9 +1056,16 @@ def create_service(current_user):
         print(f"Database error in create_service: {e}")
         return jsonify({"message": "Failed to create service ticket"}), 500
 
-@app.route('/api/v1/services/<int:service_id>')
+@app.route('/api/v1/services/<int:service_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/services/<int:service_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])  # Fallback route
 @token_required
-def read_service(service_id, current_user):
+def handle_service_individual(service_id, current_user):
+    if request.method == 'GET':
+        return read_service(service_id, current_user)
+    elif request.method == 'PUT':
+        return update_service(service_id, current_user)
+    elif request.method == 'DELETE':
+        return delete_service(service_id, current_user)
     try:
         with get_db_connection() as conn:
             if conn is None:
@@ -1244,9 +1276,16 @@ def create_enquiry(current_user):
         print(f"Database error in create_enquiry: {e}")
         return jsonify({"message": "Failed to create enquiry"}), 500
 
-@app.route('/api/v1/enquiries/<int:enquiry_id>')
+@app.route('/api/v1/enquiries/<int:enquiry_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/enquiries/<int:enquiry_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])  # Fallback route
 @token_required
-def read_enquiry(enquiry_id, current_user):
+def handle_enquiry_individual(enquiry_id, current_user):
+    if request.method == 'GET':
+        return read_enquiry(enquiry_id, current_user)
+    elif request.method == 'PUT':
+        return update_enquiry(enquiry_id, current_user)
+    elif request.method == 'DELETE':
+        return delete_enquiry(enquiry_id, current_user)
     try:
         with get_db_connection() as conn:
             if conn is None:
@@ -1434,9 +1473,16 @@ def create_user(current_user):
         print(f"Database error in create_user: {e}")
         return jsonify({"message": "Failed to create user"}), 500
 
-@app.route('/api/v1/users/<int:user_id>')
+@app.route('/api/v1/users/<int:user_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/users/<int:user_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])  # Fallback route
 @token_required
-def read_user(user_id, current_user):
+def handle_user_individual(user_id, current_user):
+    if request.method == 'GET':
+        return read_user(user_id, current_user)
+    elif request.method == 'PUT':
+        return update_user(user_id, current_user)
+    elif request.method == 'DELETE':
+        return delete_user(user_id, current_user)
     try:
         with get_db_connection() as conn:
             if conn is None:
