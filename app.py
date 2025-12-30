@@ -10,6 +10,8 @@ from contextlib import contextmanager
 
 app = Flask(__name__)
 CORS(app, origins=[
+    "https://ostrich-mobility-webapp-frontend-e02jnh3no.vercel.app",
+    "https://ostrich-mobility-webapp-frontend-96yh4lvso.vercel.app",
     "https://ostrich-mobility-webapp-frontend-8fcycjeoo.vercel.app",
     "https://ostrich-mobility-webapp-frontend-iw0b0ulsl.vercel.app",
     "http://localhost:3000"
