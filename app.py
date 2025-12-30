@@ -144,8 +144,9 @@ def read_root():
 def manifest():
     return app.send_static_file('manifest.json')
 
-@app.route('/api/v1')
+@app.route('/api/v1', methods=['GET'])
 def api_info():
+    print("API v1 endpoint called")
     return jsonify({
         "message": "Ostrich Product & Service Management API v1",
         "version": "1.0.0",
@@ -166,8 +167,9 @@ def api_info():
         "timestamp": "2025-12-30T13:30:00Z"
     })
 
-@app.route('/api/v1/')
+@app.route('/api/v1/', methods=['GET'])
 def api_info_slash():
+    print("API v1/ endpoint called")
     return api_info()
 
 # Auth endpoints
