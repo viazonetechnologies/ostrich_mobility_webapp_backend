@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+.env.local
+
+# Uploads and static files
+uploads/
+static/uploads/
+
+# Database scripts (temporary/testing)
+check_*.py
+test_*.py
+debug_*.py
+fix_*.py
+populate_*.py
+insert_*.py
+setup_*.py
+sync_*.py
+verify_*.py
+reset_*.py
+convert_*.py
+create_*.py
+clear_*.py
+remove_*.py
+update_*.py
+add_*.py
+list_*.py
+run_*.py
+quick_*.py
+
+# Documentation (keep only if needed)
+DATABASE_POPULATION_SUMMARY.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
