@@ -150,6 +150,7 @@ def register_product_images_routes(app):
 
 def register_enquiries_routes(app):
     @app.route('/api/v1/enquiries/', methods=['GET', 'POST'])
+    @jwt_required()
     def handle_enquiries():
         print("DEBUG: handle_enquiries called with updated code - v2")  # Debug line
         if request.method == 'GET':
@@ -280,6 +281,7 @@ def register_enquiries_routes(app):
                 return jsonify({'error': f'Failed to create enquiry: {str(e)}'}), 500
     
     @app.route('/api/v1/enquiries/<int:enquiry_id>', methods=['GET', 'PUT', 'DELETE'])
+    @jwt_required()
     def handle_single_enquiry(enquiry_id):
         if request.method == 'GET':
             try:
@@ -409,6 +411,7 @@ def register_enquiries_routes(app):
 
 def register_service_routes(app):
     @app.route('/api/v1/services/', methods=['GET', 'POST'])
+    @jwt_required()
     def handle_service_tickets():
         if request.method == 'GET':
             try:
@@ -515,6 +518,7 @@ def register_service_routes(app):
                 return jsonify({'error': f'Failed to create service ticket: {str(e)}'}), 500
     
     @app.route('/api/v1/services/<int:ticket_id>', methods=['GET', 'PUT', 'DELETE'])
+    @jwt_required()
     def handle_single_service_ticket(ticket_id):
         if request.method == 'PUT':
             try:
@@ -580,6 +584,7 @@ def register_service_routes(app):
 
 def register_sales_routes(app):
     @app.route('/api/v1/sales/', methods=['GET', 'POST'])
+    @jwt_required()
     def handle_sales():
         if request.method == 'GET':
             try:
@@ -721,6 +726,7 @@ def register_sales_routes(app):
                 return jsonify({'error': f'Failed to create sale: {str(e)}'}), 500
     
     @app.route('/api/v1/sales/<int:sale_id>', methods=['GET', 'PUT', 'DELETE'])
+    @jwt_required()
     def handle_single_sale(sale_id):
         if request.method == 'GET':
             try:
@@ -908,6 +914,7 @@ def register_sales_routes(app):
 
 def register_dispatch_routes(app):
     @app.route('/api/v1/dispatch/', methods=['GET', 'POST'])
+    @jwt_required()
     def handle_dispatch():
         if request.method == 'GET':
             try:
@@ -1035,6 +1042,7 @@ def register_dispatch_routes(app):
                 return jsonify({'error': f'Failed to create dispatch: {str(e)}'}), 500
     
     @app.route('/api/v1/dispatch/<int:dispatch_id>', methods=['PUT', 'DELETE'])
+    @jwt_required()
     def handle_single_dispatch(dispatch_id):
         if request.method == 'PUT':
             try:
@@ -1161,6 +1169,7 @@ def register_dispatch_routes(app):
                 return jsonify({'error': f'Failed to delete dispatch: {str(e)}'}), 500
     
     @app.route('/api/v1/products/by-customer/<int:customer_id>', methods=['GET'])
+    @jwt_required()
     def get_customer_products(customer_id):
         try:
             conn = get_db()
@@ -1191,6 +1200,7 @@ def register_dispatch_routes(app):
 
 def register_reports_routes(app):
     @app.route('/api/v1/reports/dashboard', methods=['GET'])
+    @jwt_required()
     def reports_dashboard_stats():
         try:
             conn = get_db()
@@ -1243,6 +1253,7 @@ def register_reports_routes(app):
             return jsonify({})
     
     @app.route('/api/v1/reports/sales', methods=['GET'])
+    @jwt_required()
     def reports_sales_report():
         try:
             conn = get_db()
@@ -1320,6 +1331,7 @@ def register_reports_routes(app):
             return jsonify({'summary': {}, 'sales': []})
     
     @app.route('/api/v1/reports/dispatch', methods=['GET'])
+    @jwt_required()
     def reports_dispatch_report():
         try:
             conn = get_db()
@@ -1386,6 +1398,7 @@ def register_reports_routes(app):
 
 def register_notifications_routes(app):
     @app.route('/api/v1/notifications/', methods=['GET'])
+    @jwt_required()
     def get_notifications():
         try:
             conn = get_db()
@@ -1415,6 +1428,7 @@ def register_notifications_routes(app):
             return jsonify([])
     
     @app.route('/api/v1/notifications/sent', methods=['GET'])
+    @jwt_required()
     def get_sent_notifications():
         try:
             conn = get_db()
@@ -1437,6 +1451,7 @@ def register_notifications_routes(app):
             return jsonify([])
     
     @app.route('/api/v1/notifications/customers', methods=['GET'])
+    @jwt_required()
     def get_notification_customers():
         try:
             conn = get_db()
@@ -1459,6 +1474,7 @@ def register_notifications_routes(app):
             return jsonify([])
     
     @app.route('/api/v1/notifications/unread-count', methods=['GET'])
+    @jwt_required()
     def get_unread_count():
         try:
             conn = get_db()
@@ -1475,6 +1491,7 @@ def register_notifications_routes(app):
             return jsonify({'unread_count': 0})
     
     @app.route('/api/v1/notifications/<int:notification_id>/read', methods=['PUT'])
+    @jwt_required()
     def mark_as_read(notification_id):
         try:
             conn = get_db()
@@ -1491,6 +1508,7 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/mark-all-read', methods=['PUT'])
+    @jwt_required()
     def mark_all_as_read():
         try:
             conn = get_db()
@@ -1507,6 +1525,7 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/<int:notification_id>', methods=['DELETE'])
+    @jwt_required()
     def delete_notification(notification_id):
         try:
             conn = get_db()
@@ -1523,6 +1542,7 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/send/<int:customer_id>', methods=['POST'])
+    @jwt_required()
     def send_to_customer(customer_id):
         try:
             data = request.get_json()
@@ -1543,6 +1563,7 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/broadcast', methods=['POST'])
+    @jwt_required()
     def broadcast_notification():
         try:
             data = request.get_json()
@@ -1624,6 +1645,7 @@ def register_specifications_routes(app):
         })
     
     @app.route('/api/v1/products/<int:product_id>/specifications', methods=['GET', 'POST', 'DELETE'])
+    @jwt_required()
     def handle_product_specifications(product_id):
         """Get, add, or delete product specifications"""
         if request.method == 'GET':
@@ -1740,6 +1762,7 @@ def register_specifications_routes(app):
                 return jsonify({'error': f'Failed to delete specifications: {str(e)}'}), 500
     
     @app.route('/api/v1/products/specifications/<int:spec_id>', methods=['DELETE'])
+    @jwt_required()
     def delete_single_specification(spec_id):
         """Delete a single product specification by ID"""
         try:
