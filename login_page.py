@@ -163,7 +163,7 @@ def register_login_routes(app):
                                 'role': user['role']
                             }
                             
-                            token = create_access_token(identity=user['id'])
+                            token = create_access_token(identity=str(user['id']))
                             return jsonify({
                                 'access_token': token,
                                 'token_type': 'bearer',
