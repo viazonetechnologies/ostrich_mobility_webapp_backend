@@ -117,13 +117,7 @@ def register_login_routes(app):
             # Hardcoded admin (as per README)
             if username == 'admin' and password == 'admin123':
                 print("Admin login successful")
-                token = create_access_token(identity={
-                    'id': 1, 
-                    'username': 'admin', 
-                    'role': 'admin',
-                    'first_name': 'Admin',
-                    'last_name': 'User'
-                })
+                token = create_access_token(identity=1)
                 return jsonify({
                     'access_token': token,
                     'token_type': 'bearer',
@@ -188,7 +182,7 @@ def register_login_routes(app):
                                 'role': user['role']
                             }
                             
-                            token = create_access_token(identity=user_data)
+                            token = create_access_token(identity=user['id'])
                             return jsonify({
                                 'access_token': token,
                                 'token_type': 'bearer',
