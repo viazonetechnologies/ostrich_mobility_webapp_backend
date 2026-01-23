@@ -114,25 +114,6 @@ def register_login_routes(app):
                     'error': 'Too many login attempts. Please try again in 15 minutes.'
                 }), 429
             
-            # Hardcoded admin (as per README)
-            if username == 'admin' and password == 'admin123':
-                print("Admin login successful")
-                token = create_access_token(identity=1)
-                return jsonify({
-                    'access_token': token,
-                    'token_type': 'bearer',
-                    'user': {
-                        'id': 1, 
-                        'username': 'admin', 
-                        'role': 'admin', 
-                        'first_name': 'Admin', 
-                        'last_name': 'User',
-                        'email': 'admin@ostrich.com'
-                    }
-                })
-            
-            print("Admin login failed - checking database users")
-            
             # Database users
             conn = get_db()
             if conn:
