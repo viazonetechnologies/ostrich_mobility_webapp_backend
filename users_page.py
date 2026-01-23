@@ -27,8 +27,22 @@ def register_users_routes(app):
     @app.route('/api/v1/users/', methods=['GET', 'POST'])
     @jwt_required()
     def handle_users():
-        current_user = get_jwt_identity()
-        current_role = current_user.get('role')
+        current_user_id = get_jwt_identity()
+        
+        # Get current user's role from database
+        conn = get_db()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+        
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
+        current_user = cursor.fetchone()
+        conn.close()
+        
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        current_role = current_user['role']
         
         if request.method == 'GET':
             try:
@@ -167,8 +181,22 @@ def register_users_routes(app):
     @app.route('/api/v1/users/<int:user_id>', methods=['GET', 'PUT', 'DELETE'])
     @jwt_required()
     def handle_single_user(user_id):
-        current_user = get_jwt_identity()
-        current_role = current_user.get('role')
+        current_user_id = get_jwt_identity()
+        
+        # Get current user's role from database
+        conn = get_db()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+        
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
+        current_user = cursor.fetchone()
+        conn.close()
+        
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        current_role = current_user['role']
         
         if request.method == 'GET':
             try:
