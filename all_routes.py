@@ -405,13 +405,7 @@ def register_enquiries_routes(app):
                 print(f"Delete enquiry error: {e}")
                 return jsonify({'error': f'Failed to delete enquiry: {str(e)}'}), 500
 
-def register_users_routes(app):
-    from users_page import register_users_routes as register_users_crud
-    register_users_crud(app)
-
-def register_profile_routes(app):
-    from profile_page import register_profile_routes as register_profile_crud
-    register_profile_crud(app)
+# Users and Profile routes are imported at the bottom via register_all_imported_routes
 
 def register_service_routes(app):
     @app.route('/api/v1/services/', methods=['GET', 'POST'])

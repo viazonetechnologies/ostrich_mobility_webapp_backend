@@ -72,8 +72,6 @@ from product_images_routes import register_product_images_routes as register_pro
 # Register all routes
 register_product_images_routes(app)
 register_enquiries_routes(app)
-register_users_routes(app)
-register_profile_routes(app)
 register_service_routes(app)
 register_sales_routes(app)
 register_dispatch_routes(app)
