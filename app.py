@@ -34,8 +34,13 @@ def missing_token_callback(error):
 # CORS configuration - allow frontend domain
 allowed_origins = [
     'http://localhost:3000',
-    'https://ostrich-mobility-webapp-frontend-cvlqcgll8.vercel.app',
-    'https://ostrich-mobility-webapp-frontend.vercel.app'
+    'https://ostrich-mobility-webapp-frontend-iv7a1q5ru.vercel.app',
+    'https://ostrich-mobility-webapp-frontend.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-cv3rmupqy.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-2nyfz8is1.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-9oji7dzwn.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-lqsbudnrz.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-qn0i03c1c.vercel.app'
 ]
 
 CORS(app, 
@@ -141,6 +146,16 @@ def test_validation():
             return jsonify({'error': 'Invalid follow-up date'}), 400
     
     return jsonify({'message': 'Validation passed', 'server': 'webappbackend'})
+
+# Debug endpoint for services
+@app.route('/api/v1/debug/services', methods=['GET'])
+def debug_services():
+    print("DEBUG: /api/v1/debug/services endpoint hit")
+    return jsonify({
+        'message': 'Services debug endpoint working',
+        'registered_routes': [str(rule) for rule in app.url_map.iter_rules() if 'service' in str(rule).lower()],
+        'cors_origins': allowed_origins
+    })
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8002))
