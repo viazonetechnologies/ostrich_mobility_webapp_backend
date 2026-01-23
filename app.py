@@ -18,23 +18,27 @@ jwt = JWTManager(app)
 # JWT error handlers
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
+    print(f"Token expired: {jwt_payload}")
     return jsonify({'error': 'Token has expired', 'code': 'token_expired'}), 401
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
+    print(f"Invalid token error: {error}")
     return jsonify({'error': 'Invalid token', 'code': 'invalid_token'}), 401
 
 @jwt.unauthorized_loader
 def missing_token_callback(error):
+    print(f"Missing token error: {error}")
     return jsonify({'error': 'Authorization token is missing', 'code': 'missing_token'}), 401
 
 # CORS configuration - allow frontend domain
 allowed_origins = [
     'http://localhost:3000',
-    'https://ostrich-mobility-webapp-frontend-5lo9ar6b3.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-iv7a1q5ru.vercel.app',
     'https://ostrich-mobility-webapp-frontend.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-rib8d2miz.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-cv3rmupqy.vercel.app',
     'https://ostrich-mobility-webapp-frontend-2nyfz8is1.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-9oji7dzwn.vercel.app',
     'https://ostrich-mobility-webapp-frontend-lqsbudnrz.vercel.app'
 ]
 
