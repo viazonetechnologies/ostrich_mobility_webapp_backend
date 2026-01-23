@@ -64,7 +64,17 @@ def handle_preflight():
         return response
 
 # Import all routes from consolidated file
-from all_routes import *
+from all_routes import (
+    register_product_images_routes,
+    register_enquiries_routes,
+    register_service_routes,
+    register_sales_routes,
+    register_dispatch_routes,
+    register_reports_routes,
+    register_notifications_routes,
+    register_specifications_routes,
+    register_all_imported_routes
+)
 from stock_fix_routes import register_stock_fix_routes
 from customer_auth import register_customer_auth_routes
 from product_images_routes import register_product_images_routes as register_product_images_api_routes
