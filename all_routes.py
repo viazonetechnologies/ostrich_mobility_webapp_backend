@@ -1772,6 +1772,7 @@ def register_specifications_routes(app):
 
 
 # Import routes from separate files
+# Updated: Fixed duplicate route registrations
 from login_page import register_login_routes as _login_routes
 from dashboard_page import register_dashboard_routes as _dashboard_routes
 from categories_page import register_categories_routes as _categories_routes
