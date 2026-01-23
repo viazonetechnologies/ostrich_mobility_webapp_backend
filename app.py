@@ -65,7 +65,7 @@ def handle_preflight():
 
 # Import all routes from consolidated file
 from all_routes import (
-    register_product_images_routes,
+    register_product_images_routes as register_product_images_basic,
     register_enquiries_routes,
     register_service_routes,
     register_sales_routes,
@@ -77,10 +77,10 @@ from all_routes import (
 )
 from stock_fix_routes import register_stock_fix_routes
 from customer_auth import register_customer_auth_routes
-from product_images_routes import register_product_images_routes as register_product_images_api_routes
+from product_images_routes import register_product_images_routes as register_product_images_advanced
 
 # Register all routes
-register_product_images_routes(app)
+register_product_images_basic(app)  # Basic product images routes from all_routes.py
 register_enquiries_routes(app)
 register_service_routes(app)
 register_sales_routes(app)
@@ -90,8 +90,8 @@ register_notifications_routes(app)
 register_specifications_routes(app)
 register_stock_fix_routes(app)
 register_customer_auth_routes(app)
-register_product_images_api_routes(app)
-register_all_imported_routes(app)
+register_product_images_advanced(app)  # Advanced product images routes from product_images_routes.py
+register_all_imported_routes(app)  # Routes from separate page files
 
 # Health check
 @app.route('/')
