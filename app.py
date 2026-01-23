@@ -37,7 +37,7 @@ allowed_origins = [
     'https://ostrich-mobility-webapp-frontend-f57owg3kj.vercel.app',
     'https://ostrich-mobility-webapp-frontend.vercel.app',
     'https://ostrich-mobility-webapp-frontend-cv3rmupqy.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-2nyfz8is1.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-qn0i03c1c.vercel.app',
     'https://ostrich-mobility-webapp-frontend-9oji7dzwn.vercel.app',
     'https://ostrich-mobility-webapp-frontend-lqsbudnrz.vercel.app'
 ]
