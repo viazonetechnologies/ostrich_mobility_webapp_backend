@@ -31,7 +31,7 @@ def missing_token_callback(error):
 # CORS configuration - allow frontend domain
 allowed_origins = [
     'http://localhost:3000',
-    'https://ostrich-mobility-webapp-frontend-4u7rjji1g.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-5lo9ar6b3.vercel.app',
     'https://ostrich-mobility-webapp-frontend.vercel.app',
     'https://ostrich-mobility-webapp-frontend-lj9pjsx5i.vercel.app',
     'https://ostrich-mobility-webapp-frontend-2nyfz8is1.vercel.app',
