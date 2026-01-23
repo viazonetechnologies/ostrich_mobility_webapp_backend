@@ -1775,3 +1775,37 @@ def register_specifications_routes(app):
         except Exception as e:
             print(f"Delete specification error: {e}")
             return jsonify({'error': f'Failed to delete specification: {str(e)}'}), 500
+
+
+# Import routes from separate files
+from login_page import register_login_routes as _login_routes
+from dashboard_page import register_dashboard_routes as _dashboard_routes
+from categories_page import register_categories_routes as _categories_routes
+from customers_page import register_customers_routes as _customers_routes
+from products_page import register_products_routes as _products_routes
+from users_page import register_users_routes as _users_routes
+from profile_page import register_profile_routes as _profile_routes
+from regions_page import register_regions_routes as _regions_routes
+from service_tickets_page import register_service_tickets_routes as _service_tickets_routes
+from missing_routes import register_sales_routes as _sales_routes_missing
+from missing_routes import register_dispatch_routes as _dispatch_routes_missing
+from missing_routes import register_reports_routes as _reports_routes_missing
+from missing_routes import register_notifications_routes as _notifications_routes_missing
+from missing_routes import register_specifications_routes as _specifications_routes_missing
+
+# Register imported routes
+def register_all_imported_routes(app):
+    _login_routes(app)
+    _dashboard_routes(app)
+    _categories_routes(app)
+    _customers_routes(app)
+    _products_routes(app)
+    _users_routes(app)
+    _profile_routes(app)
+    _regions_routes(app)
+    _service_tickets_routes(app)
+    _sales_routes_missing(app)
+    _dispatch_routes_missing(app)
+    _reports_routes_missing(app)
+    _notifications_routes_missing(app)
+    _specifications_routes_missing(app)

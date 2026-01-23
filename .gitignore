@@ -1,3 +1,8 @@
+# Environment variables
+.env
+*.env
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
@@ -23,38 +28,6 @@ wheels/
 .installed.cfg
 *.egg
 
-# Environment variables
-.env
-.env.local
-
-# Uploads and static files
-uploads/
-static/uploads/
-
-# Database scripts (temporary/testing)
-check_*.py
-test_*.py
-debug_*.py
-fix_*.py
-populate_*.py
-insert_*.py
-setup_*.py
-sync_*.py
-verify_*.py
-reset_*.py
-convert_*.py
-create_*.py
-clear_*.py
-remove_*.py
-update_*.py
-add_*.py
-list_*.py
-run_*.py
-quick_*.py
-
-# Documentation (keep only if needed)
-DATABASE_POPULATION_SUMMARY.md
-
 # IDE
 .vscode/
 .idea/
@@ -65,3 +38,37 @@ DATABASE_POPULATION_SUMMARY.md
 # OS
 .DS_Store
 Thumbs.db
+
+# Uploads and static files
+uploads/
+static/uploads/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# Database scripts (not needed in production)
+check_*.py
+fix_*.py
+populate_*.py
+insert_*.py
+list_*.py
+reset_*.py
+setup_*.py
+sync_*.py
+test_*.py
+update_*.py
+verify_*.py
+add_*.py
+clear_*.py
+convert_*.py
+create_product_images_table.py
+debug_*.py
+quick_fix.py
+remove_placeholders.py
+run_population.py
+DATABASE_POPULATION_SUMMARY.md
+
+# Logs
+*.log

@@ -18,6 +18,11 @@ def get_db():
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
         
+        # SSL configuration - only use if DB_SSL is set to 'true'
+        ssl_config = None
+        if os.getenv('DB_SSL', 'false').lower() == 'true':
+            ssl_config = {'ssl': True}
+        
         return pymysql.connect(
             host=os.getenv('DB_HOST'),
             user=os.getenv('DB_USER'),
@@ -25,7 +30,8 @@ def get_db():
             database=os.getenv('DB_NAME'),
             port=int(os.getenv('DB_PORT')),
             charset='utf8mb4',
-            autocommit=True
+            autocommit=True,
+            ssl=ssl_config
         )
     except Exception as e:
         print(f"Database connection error: {e}")

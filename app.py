@@ -14,11 +14,25 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 # Initialize extensions
 jwt = JWTManager(app)
 
+# JWT error handlers
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return jsonify({'error': 'Token has expired', 'code': 'token_expired'}), 401
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify({'error': 'Invalid token', 'code': 'invalid_token'}), 401
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({'error': 'Authorization token is missing', 'code': 'missing_token'}), 401
+
 # CORS configuration - allow frontend domain
 allowed_origins = [
     'http://localhost:3000',
     'https://ostrich-mobility-webapp-frontend-iv7a1q5ru.vercel.app',
-    'https://ostrich-mobility-webapp-frontend.vercel.app'
+    'https://ostrich-mobility-webapp-frontend.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-cv3rmupqy.vercel.app'
 ]
 
 CORS(app, 
@@ -49,32 +63,14 @@ def handle_preflight():
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
 
-# Import page modules
-from login_page import register_login_routes
-from dashboard_page import register_dashboard_routes
-from customers_page import register_customers_routes
-from enhanced_categories_page import register_categories_routes
-from products_page import register_products_routes
-from service_tickets_page import register_service_tickets_routes
+# Import all routes from consolidated file
+from all_routes import *
 from stock_fix_routes import register_stock_fix_routes
-from quick_fix import register_quick_fix_routes
 from customer_auth import register_customer_auth_routes
 from product_images_routes import register_product_images_routes as register_product_images_api_routes
-from regions_page import register_regions_routes
-from all_routes import *
 
-# Register all page routes
-register_login_routes(app)
-register_dashboard_routes(app)
-register_customers_routes(app)
-register_categories_routes(app)
-register_products_routes(app)
-register_service_tickets_routes(app)
-register_stock_fix_routes(app)
-register_quick_fix_routes(app)
-register_customer_auth_routes(app)
-register_product_images_routes(app)  # from all_routes.py
-register_product_images_api_routes(app)  # from product_images_routes.py
+# Register all routes
+register_product_images_routes(app)
 register_enquiries_routes(app)
 register_users_routes(app)
 register_profile_routes(app)
@@ -84,9 +80,16 @@ register_dispatch_routes(app)
 register_reports_routes(app)
 register_notifications_routes(app)
 register_specifications_routes(app)
-register_regions_routes(app)
+register_stock_fix_routes(app)
+register_customer_auth_routes(app)
+register_product_images_api_routes(app)
+register_all_imported_routes(app)
 
 # Health check
+@app.route('/')
+def root():
+    return {'message': 'Ostrich Mobility Backend API', 'status': 'running', 'version': '1.0'}
+
 @app.route('/api/v1/health')
 def health_check():
     from datetime import datetime

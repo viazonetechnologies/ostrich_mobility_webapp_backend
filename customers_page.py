@@ -84,9 +84,14 @@ def register_customers_routes(app):
     def get_customers():
         """Get all customers with search and filter"""
         try:
+            # Verify JWT identity
+            current_user = get_jwt_identity()
+            if not current_user:
+                return jsonify({'error': 'Invalid authentication token'}), 401
+            
             conn = get_db()
             if not conn:
-                return jsonify([])
+                return jsonify({'error': 'Database connection failed'}), 500
             
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             
