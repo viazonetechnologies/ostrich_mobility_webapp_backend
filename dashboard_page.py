@@ -7,6 +7,7 @@ def register_dashboard_routes(app):
     """Register dashboard page routes"""
     
     @app.route('/api/v1/dashboard/analytics', methods=['GET'])
+    @jwt_required()
     def get_dashboard_analytics():
         try:
             conn = get_db()
@@ -104,6 +105,7 @@ def register_dashboard_routes(app):
     
     # Dashboard-specific endpoints (different from main CRUD endpoints)
     @app.route('/api/v1/dashboard/stats', methods=['GET'])
+    @jwt_required()
     def get_dashboard_stats():
         try:
             conn = get_db()
