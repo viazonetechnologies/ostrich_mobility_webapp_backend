@@ -10,8 +10,7 @@ def register_profile_routes(app):
     @jwt_required()
     def get_profile():
         try:
-            current_user = get_jwt_identity()
-            user_id = current_user.get('id')
+            current_user_id = get_jwt_identity()
             
             conn = get_db()
             if not conn:
@@ -22,11 +21,11 @@ def register_profile_routes(app):
                 SELECT id, username, email, role, first_name, last_name, 
                        phone, region, is_active, last_login, created_at
                 FROM users WHERE id = %s
-            """, (user_id,))
+            """, (current_user_id,))
             user = cursor.fetchone()
             conn.close()
             
-            if not user:
+            if not user or not isinstance(user, dict):
                 return jsonify({'error': 'User not found'}), 404
             
             # Ensure role is not None
@@ -36,14 +35,15 @@ def register_profile_routes(app):
             return jsonify(user)
         except Exception as e:
             print(f"Get profile error: {e}")
+            import traceback
+            traceback.print_exc()
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/profile/', methods=['PUT'])
     @jwt_required()
     def update_profile():
         try:
-            current_user = get_jwt_identity()
-            user_id = current_user.get('id')
+            current_user_id = get_jwt_identity()
             data = request.get_json()
             
             # Validation
@@ -85,7 +85,7 @@ def register_profile_routes(app):
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             
             # Check if email is taken by another user
-            cursor.execute("SELECT id FROM users WHERE email = %s AND id != %s", (email, user_id))
+            cursor.execute("SELECT id FROM users WHERE email = %s AND id != %s", (email, current_user_id))
             if cursor.fetchone():
                 conn.close()
                 return jsonify({
@@ -102,7 +102,7 @@ def register_profile_routes(app):
                 data['last_name'].strip(),
                 email,
                 phone_digits if phone else None,
-                user_id
+                current_user_id
             ))
             conn.commit()
             conn.close()
@@ -119,12 +119,11 @@ def register_profile_routes(app):
     @jwt_required()
     def change_password():
         try:
-            current_user = get_jwt_identity()
-            user_id = current_user.get('id')
+            current_user_id = get_jwt_identity()
             data = request.get_json()
             
             print(f"DEBUG: Received data: {data}")
-            print(f"DEBUG: User ID: {user_id}")
+            print(f"DEBUG: User ID: {current_user_id}")
             
             current_password = data.get('current_password', '').strip()
             new_password = data.get('new_password', '').strip()
@@ -166,7 +165,7 @@ def register_profile_routes(app):
                 return jsonify({'error': 'Database connection failed'}), 500
             
             cursor = conn.cursor(pymysql.cursors.DictCursor)
-            cursor.execute("SELECT password_hash FROM users WHERE id = %s", (user_id,))
+            cursor.execute("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
             user = cursor.fetchone()
             
             if not user:
@@ -213,7 +212,7 @@ def register_profile_routes(app):
             new_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
             
             # Update password
-            cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_hash, user_id))
+            cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_hash, current_user_id))
             conn.commit()
             conn.close()
             
