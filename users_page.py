@@ -51,12 +51,23 @@ def register_users_routes(app):
                     return jsonify([])
                 
                 cursor = conn.cursor(pymysql.cursors.DictCursor)
-                cursor.execute("""
-                    SELECT id, username, email, role, first_name, last_name, 
-                           phone, region, is_active, last_login, created_at
-                    FROM users 
-                    ORDER BY created_at DESC
-                """)
+                role_filter = request.args.get('role')
+                
+                if role_filter:
+                    cursor.execute("""
+                        SELECT id, username, email, role, first_name, last_name, 
+                               phone, region, is_active, last_login, created_at
+                        FROM users 
+                        WHERE role = %s
+                        ORDER BY created_at DESC
+                    """, (role_filter,))
+                else:
+                    cursor.execute("""
+                        SELECT id, username, email, role, first_name, last_name, 
+                               phone, region, is_active, last_login, created_at
+                        FROM users 
+                        ORDER BY created_at DESC
+                    """)
                 users = cursor.fetchall()
                 conn.close()
                 
