@@ -83,7 +83,8 @@ def register_users_routes(app):
                 
                 # Check if current user can create users with the requested role
                 requested_role = data.get('role', 'sales_executive')
-                if not can_manage_user(current_role, requested_role):
+                # super_admin can create any role including super_admin
+                if current_role != 'super_admin' and not can_manage_user(current_role, requested_role):
                     return jsonify({'error': f'You cannot create users with role {requested_role}'}), 403
                 
                 # Validation with detailed error messages
@@ -253,9 +254,11 @@ def register_users_routes(app):
                 
                 target_role = target_user['role']
                 
-                # Allow only super_admin and admin to edit themselves, or check hierarchy
+                # super_admin can edit anyone including themselves and other super_admins
+                # admin can edit themselves and lower roles
+                # others follow hierarchy
                 can_edit_self = current_user_id == user_id and current_role in ['super_admin', 'admin']
-                if not can_edit_self and not can_manage_user(current_role, target_role):
+                if current_role != 'super_admin' and not can_edit_self and not can_manage_user(current_role, target_role):
                     conn.close()
                     return jsonify({'error': f'You cannot edit users with role {target_role}'}), 403
                 
@@ -264,10 +267,9 @@ def register_users_routes(app):
                 data = request.get_json()
                 print(f"DEBUG: Updating user {user_id} with data: {data}")
                 
-                # Check if trying to change role to higher level (only if not super_admin/admin editing self)
+                # Check if trying to change role (super_admin can assign any role)
                 new_role = data.get('role', target_role)
-                can_edit_self = current_user_id == user_id and current_role in ['super_admin', 'admin']
-                if not can_edit_self and not can_manage_user(current_role, new_role):
+                if current_role != 'super_admin' and not can_edit_self and not can_manage_user(current_role, new_role):
                     return jsonify({'error': f'You cannot assign role {new_role}'}), 403
                 
                 # Validation with detailed error messages
