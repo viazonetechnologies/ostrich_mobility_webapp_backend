@@ -217,11 +217,11 @@ def register_enquiries_routes(app):
                 cursor.execute("SELECT enquiry_number FROM enquiries ORDER BY id DESC LIMIT 1")
                 last_enquiry = cursor.fetchone()
                 if last_enquiry and last_enquiry['enquiry_number']:
-                    # Extract number from last enquiry (e.g., ENQ000016 -> 16)
+                    # Extract number from last enquiry (e.g., ENQ00000016 -> 16)
                     last_num = int(last_enquiry['enquiry_number'][3:])
-                    enquiry_number = f"ENQ{str(last_num + 1).zfill(6)}"
+                    enquiry_number = f"ENQ{str(last_num + 1).zfill(8)}"
                 else:
-                    enquiry_number = "ENQ000001"
+                    enquiry_number = "ENQ00000001"
                 
                 # Process follow_up_date
                 follow_up_date = data.get('follow_up_date')
@@ -410,7 +410,7 @@ def register_enquiries_routes(app):
 # Users and Profile routes are imported at the bottom via register_all_imported_routes
 
 def register_service_routes(app):
-    @app.route('/api/v1/services/', methods=['GET', 'POST'])
+    @app.route('/api/v1/service-tickets/', methods=['GET', 'POST'])
     @jwt_required()
     def handle_service_tickets():
         if request.method == 'GET':
@@ -473,9 +473,9 @@ def register_service_routes(app):
                 last_ticket = cursor.fetchone()
                 if last_ticket and last_ticket['ticket_number']:
                     last_num = int(last_ticket['ticket_number'][3:])
-                    ticket_number = f"SRV{str(last_num + 1).zfill(6)}"
+                    ticket_number = f"SRV{str(last_num + 1).zfill(8)}"
                 else:
-                    ticket_number = "SRV000001"
+                    ticket_number = "SRV00000001"
                 
                 # Insert service ticket
                 cursor.execute("""
@@ -517,7 +517,7 @@ def register_service_routes(app):
                 print(f"Create service ticket error: {e}")
                 return jsonify({'error': f'Failed to create service ticket: {str(e)}'}), 500
     
-    @app.route('/api/v1/services/<int:ticket_id>', methods=['GET', 'PUT', 'DELETE'])
+    @app.route('/api/v1/service-tickets/<int:ticket_id>', methods=['GET', 'PUT', 'DELETE'])
     @jwt_required()
     def handle_single_service_ticket(ticket_id):
         if request.method == 'PUT':
@@ -663,11 +663,11 @@ def register_sales_routes(app):
                 if last_sale and last_sale['sale_number']:
                     try:
                         last_num = int(last_sale['sale_number'][3:])
-                        sale_number = f"SAL{str(last_num + 1).zfill(6)}"
+                        sale_number = f"SAL{str(last_num + 1).zfill(8)}"
                     except (ValueError, IndexError):
-                        sale_number = "SAL000001"
+                        sale_number = "SAL00000001"
                 else:
-                    sale_number = "SAL000001"
+                    sale_number = "SAL00000001"
                 
                 # Insert sale
                 cursor.execute("""
@@ -999,9 +999,9 @@ def register_dispatch_routes(app):
                 last_dispatch = cursor.fetchone()
                 if last_dispatch and last_dispatch['dispatch_number']:
                     last_num = int(last_dispatch['dispatch_number'][4:])
-                    dispatch_number = f"DISP{str(last_num + 1).zfill(5)}"
+                    dispatch_number = f"DISP{str(last_num + 1).zfill(8)}"
                 else:
-                    dispatch_number = "DISP00001"
+                    dispatch_number = "DISP00000001"
                 
                 cursor.execute("""
                     INSERT INTO dispatches (dispatch_number, sale_id, customer_id, product_id, driver_name, 
