@@ -227,6 +227,10 @@ def register_users_routes(app):
                 if not user:
                     return jsonify({'error': 'User not found'}), 404
                 
+                # Allow viewing: super_admin/admin can view anyone, others can only view themselves
+                if current_role not in ['super_admin', 'admin'] and current_user_id != user_id:
+                    return jsonify({'error': 'You can only view your own profile'}), 403
+                
                 return jsonify(user)
             except Exception as e:
                 print(f"Get user error: {e}")
