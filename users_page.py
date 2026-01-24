@@ -249,8 +249,9 @@ def register_users_routes(app):
                 
                 target_role = target_user['role']
                 
-                # Check if current user can manage target user
-                if not can_manage_user(current_role, target_role):
+                # Allow only super_admin and admin to edit themselves, or check hierarchy
+                can_edit_self = current_user_id == user_id and current_role in ['super_admin', 'admin']
+                if not can_edit_self and not can_manage_user(current_role, target_role):
                     conn.close()
                     return jsonify({'error': f'You cannot edit users with role {target_role}'}), 403
                 
@@ -259,9 +260,10 @@ def register_users_routes(app):
                 data = request.get_json()
                 print(f"DEBUG: Updating user {user_id} with data: {data}")
                 
-                # Check if trying to change role to higher level
+                # Check if trying to change role to higher level (only if not super_admin/admin editing self)
                 new_role = data.get('role', target_role)
-                if not can_manage_user(current_role, new_role):
+                can_edit_self = current_user_id == user_id and current_role in ['super_admin', 'admin']
+                if not can_edit_self and not can_manage_user(current_role, new_role):
                     return jsonify({'error': f'You cannot assign role {new_role}'}), 403
                 
                 # Validation with detailed error messages
