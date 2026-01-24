@@ -194,7 +194,7 @@ def register_customers_routes(app):
             cursor.execute("SELECT MAX(CAST(SUBSTRING(customer_code, 5) AS UNSIGNED)) as max_num FROM customers WHERE customer_code LIKE 'CUST%'")
             result = cursor.fetchone()
             next_num = (result['max_num'] or 0) + 1 if result else 1
-            customer_code = f"CUST{next_num:03d}"
+            customer_code = f"CUST{next_num:08d}"
             
             # Hash password if provided
             password_hash = None
