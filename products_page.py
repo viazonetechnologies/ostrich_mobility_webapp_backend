@@ -26,8 +26,8 @@ def validate_product_data(data):
     
     # Validate product code format
     sku = data.get('sku', '').strip()
-    if sku and not re.match(r'^PROD\d{8}$', sku):
-        errors.append('Product code must be in format PROD00000001 (PROD followed by 8 digits)')
+    if sku and not re.match(r'^PROD\d{5}$', sku):
+        errors.append('Product code must be in format PROD00001 (PROD followed by 5 digits)')
     
     price = data.get('price')
     if not price or float(price) <= 0:
