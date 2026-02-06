@@ -7,4 +7,4 @@ Werkzeug==2.3.7
 gunicorn==21.2.0
 bcrypt==4.0.1
 requests==2.31.0
-DBUtils==3.0.3
+dbutils==3.0.3
