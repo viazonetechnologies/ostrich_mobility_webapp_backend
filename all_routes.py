@@ -150,7 +150,6 @@ def register_product_images_routes(app):
 
 def register_enquiries_routes(app):
     @app.route('/api/v1/enquiries/', methods=['GET', 'POST'])
-    @jwt_required()
     def handle_enquiries():
         print("DEBUG: handle_enquiries called with updated code - v2")  # Debug line
         if request.method == 'GET':
@@ -217,11 +216,11 @@ def register_enquiries_routes(app):
                 cursor.execute("SELECT enquiry_number FROM enquiries ORDER BY id DESC LIMIT 1")
                 last_enquiry = cursor.fetchone()
                 if last_enquiry and last_enquiry['enquiry_number']:
-                    # Extract number from last enquiry (e.g., ENQ00000016 -> 16)
+                    # Extract number from last enquiry (e.g., ENQ000016 -> 16)
                     last_num = int(last_enquiry['enquiry_number'][3:])
-                    enquiry_number = f"ENQ{str(last_num + 1).zfill(8)}"
+                    enquiry_number = f"ENQ{str(last_num + 1).zfill(6)}"
                 else:
-                    enquiry_number = "ENQ00000001"
+                    enquiry_number = "ENQ000001"
                 
                 # Process follow_up_date
                 follow_up_date = data.get('follow_up_date')
@@ -281,7 +280,6 @@ def register_enquiries_routes(app):
                 return jsonify({'error': f'Failed to create enquiry: {str(e)}'}), 500
     
     @app.route('/api/v1/enquiries/<int:enquiry_id>', methods=['GET', 'PUT', 'DELETE'])
-    @jwt_required()
     def handle_single_enquiry(enquiry_id):
         if request.method == 'GET':
             try:
@@ -407,11 +405,8 @@ def register_enquiries_routes(app):
                 print(f"Delete enquiry error: {e}")
                 return jsonify({'error': f'Failed to delete enquiry: {str(e)}'}), 500
 
-# Users and Profile routes are imported at the bottom via register_all_imported_routes
-
 def register_service_routes(app):
-    @app.route('/api/v1/service-tickets/', methods=['GET', 'POST'])
-    @jwt_required()
+    @app.route('/api/v1/services/', methods=['GET', 'POST'])
     def handle_service_tickets():
         if request.method == 'GET':
             try:
@@ -473,9 +468,9 @@ def register_service_routes(app):
                 last_ticket = cursor.fetchone()
                 if last_ticket and last_ticket['ticket_number']:
                     last_num = int(last_ticket['ticket_number'][3:])
-                    ticket_number = f"SRV{str(last_num + 1).zfill(8)}"
+                    ticket_number = f"SRV{str(last_num + 1).zfill(6)}"
                 else:
-                    ticket_number = "SRV00000001"
+                    ticket_number = "SRV000001"
                 
                 # Insert service ticket
                 cursor.execute("""
@@ -517,8 +512,7 @@ def register_service_routes(app):
                 print(f"Create service ticket error: {e}")
                 return jsonify({'error': f'Failed to create service ticket: {str(e)}'}), 500
     
-    @app.route('/api/v1/service-tickets/<int:ticket_id>', methods=['GET', 'PUT', 'DELETE'])
-    @jwt_required()
+    @app.route('/api/v1/services/<int:ticket_id>', methods=['GET', 'PUT', 'DELETE'])
     def handle_single_service_ticket(ticket_id):
         if request.method == 'PUT':
             try:
@@ -584,7 +578,6 @@ def register_service_routes(app):
 
 def register_sales_routes(app):
     @app.route('/api/v1/sales/', methods=['GET', 'POST'])
-    @jwt_required()
     def handle_sales():
         if request.method == 'GET':
             try:
@@ -663,11 +656,11 @@ def register_sales_routes(app):
                 if last_sale and last_sale['sale_number']:
                     try:
                         last_num = int(last_sale['sale_number'][3:])
-                        sale_number = f"SAL{str(last_num + 1).zfill(8)}"
+                        sale_number = f"SAL{str(last_num + 1).zfill(6)}"
                     except (ValueError, IndexError):
-                        sale_number = "SAL00000001"
+                        sale_number = "SAL000001"
                 else:
-                    sale_number = "SAL00000001"
+                    sale_number = "SAL000001"
                 
                 # Insert sale
                 cursor.execute("""
@@ -726,7 +719,6 @@ def register_sales_routes(app):
                 return jsonify({'error': f'Failed to create sale: {str(e)}'}), 500
     
     @app.route('/api/v1/sales/<int:sale_id>', methods=['GET', 'PUT', 'DELETE'])
-    @jwt_required()
     def handle_single_sale(sale_id):
         if request.method == 'GET':
             try:
@@ -914,7 +906,6 @@ def register_sales_routes(app):
 
 def register_dispatch_routes(app):
     @app.route('/api/v1/dispatch/', methods=['GET', 'POST'])
-    @jwt_required()
     def handle_dispatch():
         if request.method == 'GET':
             try:
@@ -999,9 +990,9 @@ def register_dispatch_routes(app):
                 last_dispatch = cursor.fetchone()
                 if last_dispatch and last_dispatch['dispatch_number']:
                     last_num = int(last_dispatch['dispatch_number'][4:])
-                    dispatch_number = f"DISP{str(last_num + 1).zfill(8)}"
+                    dispatch_number = f"DISP{str(last_num + 1).zfill(5)}"
                 else:
-                    dispatch_number = "DISP00000001"
+                    dispatch_number = "DISP00001"
                 
                 cursor.execute("""
                     INSERT INTO dispatches (dispatch_number, sale_id, customer_id, product_id, driver_name, 
@@ -1042,7 +1033,6 @@ def register_dispatch_routes(app):
                 return jsonify({'error': f'Failed to create dispatch: {str(e)}'}), 500
     
     @app.route('/api/v1/dispatch/<int:dispatch_id>', methods=['PUT', 'DELETE'])
-    @jwt_required()
     def handle_single_dispatch(dispatch_id):
         if request.method == 'PUT':
             try:
@@ -1169,7 +1159,6 @@ def register_dispatch_routes(app):
                 return jsonify({'error': f'Failed to delete dispatch: {str(e)}'}), 500
     
     @app.route('/api/v1/products/by-customer/<int:customer_id>', methods=['GET'])
-    @jwt_required()
     def get_customer_products(customer_id):
         try:
             conn = get_db()
@@ -1200,7 +1189,6 @@ def register_dispatch_routes(app):
 
 def register_reports_routes(app):
     @app.route('/api/v1/reports/dashboard', methods=['GET'])
-    @jwt_required()
     def reports_dashboard_stats():
         try:
             conn = get_db()
@@ -1253,7 +1241,6 @@ def register_reports_routes(app):
             return jsonify({})
     
     @app.route('/api/v1/reports/sales', methods=['GET'])
-    @jwt_required()
     def reports_sales_report():
         try:
             conn = get_db()
@@ -1331,7 +1318,6 @@ def register_reports_routes(app):
             return jsonify({'summary': {}, 'sales': []})
     
     @app.route('/api/v1/reports/dispatch', methods=['GET'])
-    @jwt_required()
     def reports_dispatch_report():
         try:
             conn = get_db()
@@ -1398,7 +1384,6 @@ def register_reports_routes(app):
 
 def register_notifications_routes(app):
     @app.route('/api/v1/notifications/', methods=['GET'])
-    @jwt_required()
     def get_notifications():
         try:
             conn = get_db()
@@ -1428,7 +1413,6 @@ def register_notifications_routes(app):
             return jsonify([])
     
     @app.route('/api/v1/notifications/sent', methods=['GET'])
-    @jwt_required()
     def get_sent_notifications():
         try:
             conn = get_db()
@@ -1451,7 +1435,6 @@ def register_notifications_routes(app):
             return jsonify([])
     
     @app.route('/api/v1/notifications/customers', methods=['GET'])
-    @jwt_required()
     def get_notification_customers():
         try:
             conn = get_db()
@@ -1474,7 +1457,6 @@ def register_notifications_routes(app):
             return jsonify([])
     
     @app.route('/api/v1/notifications/unread-count', methods=['GET'])
-    @jwt_required()
     def get_unread_count():
         try:
             conn = get_db()
@@ -1491,7 +1473,6 @@ def register_notifications_routes(app):
             return jsonify({'unread_count': 0})
     
     @app.route('/api/v1/notifications/<int:notification_id>/read', methods=['PUT'])
-    @jwt_required()
     def mark_as_read(notification_id):
         try:
             conn = get_db()
@@ -1508,7 +1489,6 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/mark-all-read', methods=['PUT'])
-    @jwt_required()
     def mark_all_as_read():
         try:
             conn = get_db()
@@ -1525,7 +1505,6 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/<int:notification_id>', methods=['DELETE'])
-    @jwt_required()
     def delete_notification(notification_id):
         try:
             conn = get_db()
@@ -1542,7 +1521,6 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/send/<int:customer_id>', methods=['POST'])
-    @jwt_required()
     def send_to_customer(customer_id):
         try:
             data = request.get_json()
@@ -1563,7 +1541,6 @@ def register_notifications_routes(app):
             return jsonify({'error': str(e)}), 500
     
     @app.route('/api/v1/notifications/broadcast', methods=['POST'])
-    @jwt_required()
     def broadcast_notification():
         try:
             data = request.get_json()
@@ -1645,7 +1622,6 @@ def register_specifications_routes(app):
         })
     
     @app.route('/api/v1/products/<int:product_id>/specifications', methods=['GET', 'POST', 'DELETE'])
-    @jwt_required()
     def handle_product_specifications(product_id):
         """Get, add, or delete product specifications"""
         if request.method == 'GET':
@@ -1761,59 +1737,69 @@ def register_specifications_routes(app):
                 print(f"Delete product specifications error: {e}")
                 return jsonify({'error': f'Failed to delete specifications: {str(e)}'}), 500
     
-    @app.route('/api/v1/products/specifications/<int:spec_id>', methods=['DELETE'])
-    @jwt_required()
-    def delete_single_specification(spec_id):
-        """Delete a single product specification by ID"""
-        try:
-            conn = get_db()
-            if not conn:
-                return jsonify({'error': 'Database connection failed'}), 500
-            
-            cursor = conn.cursor(pymysql.cursors.DictCursor)
-            
-            # Delete specific specification
-            cursor.execute(
-                "DELETE FROM product_specifications WHERE id = %s",
-                (spec_id,)
-            )
-            deleted_count = cursor.rowcount
-            conn.commit()
-            conn.close()
-            
-            if deleted_count > 0:
-                return jsonify({
-                    'message': f'Specification {spec_id} deleted successfully',
-                    'deleted_count': deleted_count
-                }), 200
-            else:
-                return jsonify({'error': 'Specification not found'}), 404
+    @app.route('/api/v1/products/specifications/<int:spec_id>', methods=['PUT', 'DELETE'])
+    def handle_single_specification(spec_id):
+        """Update or delete a single product specification by ID"""
+        if request.method == 'PUT':
+            try:
+                data = request.get_json()
+                if not data:
+                    return jsonify({'error': 'No data provided'}), 400
                 
-        except Exception as e:
-            print(f"Delete specification error: {e}")
-            return jsonify({'error': f'Failed to delete specification: {str(e)}'}), 500
-
-
-# Import routes from separate files
-# Updated: Fixed duplicate route registrations
-from login_page import register_login_routes as _login_routes
-from dashboard_page import register_dashboard_routes as _dashboard_routes
-from categories_page import register_categories_routes as _categories_routes
-from customers_page import register_customers_routes as _customers_routes
-from products_page import register_products_routes as _products_routes
-from users_page import register_users_routes as _users_routes
-from profile_page import register_profile_routes as _profile_routes
-from regions_page import register_regions_routes as _regions_routes
-from service_tickets_page import register_service_tickets_routes as _service_tickets_routes
-
-# Register imported routes (these are from separate page files)
-def register_all_imported_routes(app):
-    _login_routes(app)
-    _dashboard_routes(app)
-    _categories_routes(app)
-    _customers_routes(app)
-    _products_routes(app)
-    _users_routes(app)
-    _profile_routes(app)
-    _regions_routes(app)
-    _service_tickets_routes(app)
+                feature_name = data.get('spec_name') or data.get('feature_name')
+                feature_value = data.get('spec_value') or data.get('feature_value')
+                category = data.get('spec_category') or data.get('category', 'General')
+                
+                if not feature_name or not feature_value:
+                    return jsonify({'error': 'spec_name and spec_value are required'}), 400
+                
+                conn = get_db()
+                if not conn:
+                    return jsonify({'error': 'Database connection failed'}), 500
+                
+                cursor = conn.cursor(pymysql.cursors.DictCursor)
+                cursor.execute(
+                    "UPDATE product_specifications SET feature_name = %s, feature_value = %s, category = %s WHERE id = %s",
+                    (feature_name.strip(), feature_value.strip(), category.strip(), spec_id)
+                )
+                
+                if cursor.rowcount == 0:
+                    conn.close()
+                    return jsonify({'error': 'Specification not found'}), 404
+                
+                conn.commit()
+                conn.close()
+                return jsonify({'message': 'Specification updated successfully'}), 200
+                
+            except Exception as e:
+                print(f"Update specification error: {e}")
+                return jsonify({'error': f'Failed to update specification: {str(e)}'}), 500
+        
+        elif request.method == 'DELETE':
+            try:
+                conn = get_db()
+                if not conn:
+                    return jsonify({'error': 'Database connection failed'}), 500
+                
+                cursor = conn.cursor(pymysql.cursors.DictCursor)
+                
+                # Delete specific specification
+                cursor.execute(
+                    "DELETE FROM product_specifications WHERE id = %s",
+                    (spec_id,)
+                )
+                deleted_count = cursor.rowcount
+                conn.commit()
+                conn.close()
+                
+                if deleted_count > 0:
+                    return jsonify({
+                        'message': f'Specification {spec_id} deleted successfully',
+                        'deleted_count': deleted_count
+                    }), 200
+                else:
+                    return jsonify({'error': 'Specification not found'}), 404
+                    
+            except Exception as e:
+                print(f"Delete specification error: {e}")
+                return jsonify({'error': f'Failed to delete specification: {str(e)}'}), 500
