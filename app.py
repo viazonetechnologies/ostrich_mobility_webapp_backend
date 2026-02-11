@@ -38,9 +38,7 @@ ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://ostrich-mobility-webapp-frontend-3lxjrmef8.vercel.app',
     'https://ostrich-mobility-webapp-frontend.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-emaeg8you.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-40riormqu.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-hjetropff.vercel.app'
+    'https://ostrich-mobility-webapp-frontend-i5h8xrqpm.vercel.app'
 ]
 
 # Static file serving
