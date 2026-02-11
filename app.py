@@ -33,6 +33,16 @@ CORS(app,
      allow_headers=['Content-Type', 'Authorization'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
+# Explicitly add the Vercel frontend URL
+ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'https://ostrich-mobility-webapp-frontend-3lxjrmef8.vercel.app',
+    'https://ostrich-mobility-webapp-frontend.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-emaeg8you.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-40riormqu.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-hjetropff.vercel.app'
+]
+
 # Static file serving
 @app.route('/static/uploads/<filename>')
 def uploaded_file(filename):
@@ -53,6 +63,17 @@ def handle_preflight():
         response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS")
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
+
+# Add CORS headers to all responses
+@app.after_request
+def after_request(response):
+    origin = request.headers.get('Origin')
+    if origin and origin in ALLOWED_ORIGINS:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+    return response
 
 # Import page modules
 from login_page import register_login_routes
