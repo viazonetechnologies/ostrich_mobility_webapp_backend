@@ -9,8 +9,7 @@ app = Flask(__name__)
 
 # Configuration
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'change-this-in-production')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)  # 7 days
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)  # 30 days
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
 # Initialize extensions
 jwt = JWTManager(app)
@@ -18,29 +17,18 @@ jwt = JWTManager(app)
 # JWT error handlers
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
-    print(f"Token expired: {jwt_payload}")
-    return jsonify({'error': 'Token has expired', 'code': 'token_expired'}), 401
+    return jsonify({'error': 'Token has expired'}), 401
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    print(f"Invalid token error: {error}")
-    return jsonify({'error': 'Invalid token', 'code': 'invalid_token'}), 401
+    return jsonify({'error': 'Invalid token'}), 401
 
 @jwt.unauthorized_loader
 def missing_token_callback(error):
-    print(f"Missing token error: {error}")
-    return jsonify({'error': 'Authorization token is missing', 'code': 'missing_token'}), 401
-
-# CORS configuration - allow frontend domain
-allowed_origins = [
-    'http://localhost:3000',
-    'https://ostrich-mobility-webapp-frontend-5fmmzw39m.vercel.app',
-    'https://ostrich-mobility-webapp-frontend.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-3lxjrmef8.vercel.app'
-]
+    return jsonify({'error': 'Authorization token is missing'}), 401
 
 CORS(app, 
-     origins=allowed_origins, 
+     origins=['*'],
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
@@ -60,48 +48,48 @@ def handle_preflight():
     if request.method == "OPTIONS":
         response = jsonify()
         origin = request.headers.get('Origin')
-        if origin in allowed_origins:
-            response.headers.add("Access-Control-Allow-Origin", origin)
+        response.headers.add("Access-Control-Allow-Origin", origin or "*")
         response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
         response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS")
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
 
-# Import all routes from consolidated file
-from all_routes import (
-    register_product_images_routes as register_product_images_basic,
-    register_enquiries_routes,
-    register_service_routes,
-    register_sales_routes,
-    register_dispatch_routes,
-    register_reports_routes,
-    register_notifications_routes,
-    register_specifications_routes,
-    register_all_imported_routes
-)
+# Import page modules
+from login_page import register_login_routes
+from dashboard_page import register_dashboard_routes
+from customers_page import register_customers_routes
+from enhanced_categories_page import register_categories_routes
+from products_page import register_products_routes
+from service_tickets_page import register_service_tickets_routes
 from stock_fix_routes import register_stock_fix_routes
 from customer_auth import register_customer_auth_routes
-from product_images_routes import register_product_images_routes as register_product_images_advanced
+from product_images_routes import register_product_images_routes as register_product_images_api_routes
+from regions_page import register_regions_routes
+from all_routes import *
 
-# Register all routes
-register_product_images_basic(app)  # Basic product images routes from all_routes.py
+# Register all page routes
+register_login_routes(app)
+register_dashboard_routes(app)
+register_customers_routes(app)
+register_categories_routes(app)
+register_products_routes(app)
+register_service_tickets_routes(app)
+register_stock_fix_routes(app)
+register_customer_auth_routes(app)
+register_product_images_routes(app)  # from all_routes.py
+register_product_images_api_routes(app)  # from product_images_routes.py
 register_enquiries_routes(app)
+register_users_routes(app)
+register_profile_routes(app)
 register_service_routes(app)
 register_sales_routes(app)
 register_dispatch_routes(app)
 register_reports_routes(app)
 register_notifications_routes(app)
 register_specifications_routes(app)
-register_stock_fix_routes(app)
-register_customer_auth_routes(app)
-register_product_images_advanced(app)  # Advanced product images routes from product_images_routes.py
-register_all_imported_routes(app)  # Routes from separate page files
+register_regions_routes(app)
 
 # Health check
-@app.route('/')
-def root():
-    return {'message': 'Ostrich Mobility Backend API', 'status': 'running', 'version': '1.0'}
-
 @app.route('/api/v1/health')
 def health_check():
     from datetime import datetime
@@ -143,18 +131,12 @@ def test_validation():
     
     return jsonify({'message': 'Validation passed', 'server': 'webappbackend'})
 
-# Debug endpoint for services
-@app.route('/api/v1/debug/services', methods=['GET'])
-def debug_services():
-    print("DEBUG: /api/v1/debug/services endpoint hit")
-    return jsonify({
-        'message': 'Services debug endpoint working',
-        'registered_routes': [str(rule) for rule in app.url_map.iter_rules() if 'service' in str(rule).lower()],
-        'cors_origins': allowed_origins
-    })
-
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 8002))
-    print("Starting Ostrich Web App Backend...")
-    print(f"Server: http://0.0.0.0:{port}")
-    app.run(debug=False, host='0.0.0.0', port=port)
+    print("Starting Ostrich Web App Backend... v2.1")  # Force reload
+    print("Login: admin / admin123")
+    print("Server: http://localhost:8002")
+    print("Available endpoints:")
+    print("- POST /api/v1/auth/login")
+    print("- GET /api/v1/dashboard/analytics")
+    print("- GET /api/v1/notifications/unread-count")
+    app.run(debug=True, host='0.0.0.0', port=8002)
