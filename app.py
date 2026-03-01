@@ -33,7 +33,8 @@ allowed_origins = [
     'http://localhost:3000',
     'https://ostrich-mobility-webapp-frontend-iv7a1q5ru.vercel.app',
     'https://ostrich-mobility-webapp-frontend.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-cv3rmupqy.vercel.app'
+    'https://ostrich-mobility-webapp-frontend-cv3rmupqy.vercel.app',
+    'https://ostrich-mobility-webapp-frontend-hzuov4glj.vercel.app'
 ]
 
 CORS(app, 
