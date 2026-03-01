@@ -1,8 +1,11 @@
-from flask import jsonify, request
+from flask import jsonify, request, send_file
 from flask_jwt_extended import jwt_required
 from database import get_db
 from cache_config import cache_response, clear_cache_pattern
 import pymysql
+import pandas as pd
+from io import BytesIO
+from datetime import datetime
 
 def register_service_tickets_routes(app):
     """Register service tickets routes"""
@@ -63,8 +66,8 @@ def register_service_tickets_routes(app):
             cursor.execute("""
                 INSERT INTO service_tickets 
                 (ticket_number, customer_id, product_id, issue_description, priority, status, 
-                assigned_staff_id, warranty_status, resolution_details)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                assigned_staff_id, warranty_status, resolution_details, remarks)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 ticket_number,
                 data.get('customer_id'),
@@ -74,7 +77,8 @@ def register_service_tickets_routes(app):
                 data.get('status', 'OPEN'),
                 data.get('assigned_staff_id'),
                 data.get('warranty_status', 'No'),
-                data.get('resolution_details')
+                data.get('resolution_details'),
+                data.get('remarks')
             ))
             
             conn.commit()
@@ -98,7 +102,7 @@ def register_service_tickets_routes(app):
             cursor.execute("""
                 UPDATE service_tickets 
                 SET customer_id=%s, product_id=%s, issue_description=%s, priority=%s, 
-                    status=%s, assigned_staff_id=%s, warranty_status=%s, resolution_details=%s
+                    status=%s, assigned_staff_id=%s, warranty_status=%s, resolution_details=%s, remarks=%s
                 WHERE id=%s
             """, (
                 data.get('customer_id'),
@@ -109,6 +113,7 @@ def register_service_tickets_routes(app):
                 data.get('assigned_staff_id'),
                 data.get('warranty_status'),
                 data.get('resolution_details'),
+                data.get('remarks'),
                 ticket_id
             ))
             
@@ -136,4 +141,100 @@ def register_service_tickets_routes(app):
             
         except Exception as e:
             print(f"Delete service ticket error: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/service-tickets/import', methods=['POST'])
+    @jwt_required(optional=True)
+    def import_service_tickets():
+        """Import service tickets from Excel"""
+        try:
+            if 'file' not in request.files:
+                return jsonify({'error': 'No file uploaded'}), 400
+            
+            file = request.files['file']
+            df = pd.read_excel(file)
+            
+            conn = get_db()
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+            
+            imported = 0
+            errors = []
+            
+            for idx, row in df.iterrows():
+                try:
+                    # Find customer by name or phone
+                    cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR phone=%s LIMIT 1", 
+                                 (row.get('Customer Name'), row.get('Contact Number')))
+                    customer = cursor.fetchone()
+                    if not customer:
+                        errors.append(f"Row {idx+2}: Customer not found")
+                        continue
+                    
+                    # Find product by name
+                    product_id = None
+                    if pd.notna(row.get('Product Model')):
+                        cursor.execute("SELECT id FROM products WHERE name=%s LIMIT 1", (row.get('Product Model'),))
+                        product = cursor.fetchone()
+                        if product:
+                            product_id = product['id']
+                    
+                    # Find engineer by name
+                    engineer_id = None
+                    if pd.notna(row.get('Service Engineer Assigned')):
+                        names = str(row.get('Service Engineer Assigned')).split()
+                        if len(names) >= 2:
+                            cursor.execute("SELECT id FROM users WHERE first_name=%s AND last_name=%s LIMIT 1", 
+                                         (names[0], names[-1]))
+                            engineer = cursor.fetchone()
+                            if engineer:
+                                engineer_id = engineer['id']
+                    
+                    # Generate ticket number
+                    cursor.execute("SELECT MAX(id) as max_id FROM service_tickets")
+                    result = cursor.fetchone()
+                    next_id = (result['max_id'] or 0) + 1
+                    ticket_number = f"TKT{next_id:06d}"
+                    
+                    # Map priority
+                    priority_map = {'Low': 'LOW', 'Medium': 'MEDIUM', 'High': 'HIGH', 'Critical': 'CRITICAL'}
+                    priority = priority_map.get(row.get('Priority'), 'MEDIUM')
+                    
+                    # Map status
+                    status_map = {'Open': 'OPEN', 'In Progress': 'IN_PROGRESS', 'Completed': 'RESOLVED', 'Closed': 'CLOSED'}
+                    status = status_map.get(row.get('Status'), 'OPEN')
+                    
+                    cursor.execute("""
+                        INSERT INTO service_tickets 
+                        (ticket_number, customer_id, product_id, issue_description, priority, status, 
+                        assigned_staff_id, warranty_status, resolution_details, remarks, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        ticket_number,
+                        customer['id'],
+                        product_id,
+                        row.get('Issue Reported', ''),
+                        priority,
+                        status,
+                        engineer_id,
+                        row.get('Warranty Status', 'No'),
+                        row.get('Resolution Details', ''),
+                        row.get('Remarks', ''),
+                        pd.to_datetime(row.get('Issue Reported Date')) if pd.notna(row.get('Issue Reported Date')) else datetime.now()
+                    ))
+                    imported += 1
+                except Exception as e:
+                    errors.append(f"Row {idx+2}: {str(e)}")
+            
+            conn.commit()
+            conn.close()
+            clear_cache_pattern('/api/v1/service-tickets/')
+            
+            return jsonify({
+                'message': f'Imported {imported} tickets',
+                'imported': imported,
+                'errors': errors
+            })
+            
+        except Exception as e:
+            print(f"Import error: {e}")
             return jsonify({'error': str(e)}), 500
