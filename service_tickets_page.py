@@ -195,9 +195,9 @@ def register_service_tickets_routes(app):
                         customer_code = f"CUST{next_cust_id:06d}"
                         
                         cursor.execute("""
-                            INSERT INTO customers (customer_code, contact_person, phone, email, city, state, created_at)
-                            VALUES (%s, %s, %s, %s, %s, %s, NOW())
-                        """, (customer_code, cust_name, cust_phone[:15], cust_email, cust_city, cust_state))
+                            INSERT INTO customers (customer_code, contact_person, phone, email, city, state, address, created_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                        """, (customer_code, cust_name, cust_phone[:15], cust_email, cust_city, cust_state, ''))
                         customer_id = cursor.lastrowid
                     else:
                         customer_id = customer['id']
