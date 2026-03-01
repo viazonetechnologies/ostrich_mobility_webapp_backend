@@ -121,8 +121,17 @@ try:
     from service_tickets_page import register_service_tickets_routes
     register_service_tickets_routes(app)
     print("✓ Service tickets registered")
+except ImportError as e:
+    print(f"Service tickets import failed: {e}")
+    print("Creating fallback service tickets route...")
+    
+    @app.route('/api/v1/service-tickets/', methods=['GET'])
+    def fallback_service_tickets():
+        return jsonify({'error': 'Service tickets module not available', 'details': str(e)}), 503
 except Exception as e:
-    print(f"Service tickets not available: {e}")
+    print(f"Service tickets error: {e}")
+    import traceback
+    traceback.print_exc()
 
 # Health check
 @app.route('/')
