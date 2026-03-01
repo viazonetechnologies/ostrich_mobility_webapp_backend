@@ -189,10 +189,15 @@ def register_service_tickets_routes(app):
                         customer = cursor.fetchone()
                     
                     if not customer:
+                        cursor.execute("SELECT MAX(id) as max_id FROM customers")
+                        result = cursor.fetchone()
+                        next_cust_id = (result['max_id'] or 0) + 1
+                        customer_code = f"CUST{next_cust_id:06d}"
+                        
                         cursor.execute("""
-                            INSERT INTO customers (contact_person, phone, email, city, state, created_at)
-                            VALUES (%s, %s, %s, %s, %s, NOW())
-                        """, (cust_name, cust_phone, cust_email, cust_city, cust_state))
+                            INSERT INTO customers (customer_code, contact_person, phone, email, city, state, created_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                        """, (customer_code, cust_name, cust_phone[:15], cust_email, cust_city, cust_state))
                         customer_id = cursor.lastrowid
                     else:
                         customer_id = customer['id']
