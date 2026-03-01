@@ -169,15 +169,28 @@ def register_service_tickets_routes(app):
             
             for idx, row in df.iterrows():
                 try:
-                    cust_name = row.get('Customer Name', '')
-                    cust_phone = str(row.get('Contact Number', '')).strip()
+                    cust_name = str(row.get('Customer Name', '')).strip()
+                    cust_phone = str(row.get('Contact Number', '')).replace(' ', '').strip()
+                    cust_email = str(row.get('Customer Email ID', '')).strip() if pd.notna(row.get('Customer Email ID')) else ''
+                    cust_city = str(row.get('Customer Location-CITY', '')).strip() if pd.notna(row.get('Customer Location-CITY')) else ''
+                    cust_state = str(row.get('Customer Location - STATE', '')).strip() if pd.notna(row.get('Customer Location - STATE')) else ''
+                    
+                    if not cust_name:
+                        errors.append(f"Row {idx+2}: Missing customer name")
+                        continue
                     
                     cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR phone=%s LIMIT 1", 
                                  (cust_name, cust_phone))
                     customer = cursor.fetchone()
+                    
                     if not customer:
-                        errors.append(f"Row {idx+2}: Customer '{cust_name}' not found")
-                        continue
+                        cursor.execute("""
+                            INSERT INTO customers (contact_person, phone, email, city, state, created_at)
+                            VALUES (%s, %s, %s, %s, %s, NOW())
+                        """, (cust_name, cust_phone, cust_email, cust_city, cust_state))
+                        customer_id = cursor.lastrowid
+                    else:
+                        customer_id = customer['id']
                     
                     product_id = None
                     if pd.notna(row.get('Product Model')):
@@ -226,7 +239,7 @@ def register_service_tickets_routes(app):
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
                         ticket_number,
-                        customer['id'],
+                        customer_id,
                         product_id,
                         row.get('Issue Reported', ''),
                         priority,
