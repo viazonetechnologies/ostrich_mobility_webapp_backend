@@ -405,6 +405,8 @@ def register_enquiries_routes(app):
                 print(f"Delete enquiry error: {e}")
                 return jsonify({'error': f'Failed to delete enquiry: {str(e)}'}), 500
 
+# Users and Profile routes are imported at the bottom via register_all_imported_routes
+
 def register_service_routes(app):
     @app.route('/api/v1/services/', methods=['GET', 'POST'])
     def handle_service_tickets():
@@ -1737,69 +1739,87 @@ def register_specifications_routes(app):
                 print(f"Delete product specifications error: {e}")
                 return jsonify({'error': f'Failed to delete specifications: {str(e)}'}), 500
     
-    @app.route('/api/v1/products/specifications/<int:spec_id>', methods=['PUT', 'DELETE'])
-    def handle_single_specification(spec_id):
-        """Update or delete a single product specification by ID"""
-        if request.method == 'PUT':
-            try:
-                data = request.get_json()
-                if not data:
-                    return jsonify({'error': 'No data provided'}), 400
+    @app.route('/api/v1/products/specifications/<int:spec_id>', methods=['DELETE'])
+    def delete_single_specification(spec_id):
+        """Delete a single product specification by ID"""
+        try:
+            conn = get_db()
+            if not conn:
+                return jsonify({'error': 'Database connection failed'}), 500
+            
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+            
+            # Delete specific specification
+            cursor.execute(
+                "DELETE FROM product_specifications WHERE id = %s",
+                (spec_id,)
+            )
+            deleted_count = cursor.rowcount
+            conn.commit()
+            conn.close()
+            
+            if deleted_count > 0:
+                return jsonify({
+                    'message': f'Specification {spec_id} deleted successfully',
+                    'deleted_count': deleted_count
+                }), 200
+            else:
+                return jsonify({'error': 'Specification not found'}), 404
                 
-                feature_name = data.get('spec_name') or data.get('feature_name')
-                feature_value = data.get('spec_value') or data.get('feature_value')
-                category = data.get('spec_category') or data.get('category', 'General')
-                
-                if not feature_name or not feature_value:
-                    return jsonify({'error': 'spec_name and spec_value are required'}), 400
-                
-                conn = get_db()
-                if not conn:
-                    return jsonify({'error': 'Database connection failed'}), 500
-                
-                cursor = conn.cursor(pymysql.cursors.DictCursor)
-                cursor.execute(
-                    "UPDATE product_specifications SET feature_name = %s, feature_value = %s, category = %s WHERE id = %s",
-                    (feature_name.strip(), feature_value.strip(), category.strip(), spec_id)
-                )
-                
-                if cursor.rowcount == 0:
-                    conn.close()
-                    return jsonify({'error': 'Specification not found'}), 404
-                
-                conn.commit()
-                conn.close()
-                return jsonify({'message': 'Specification updated successfully'}), 200
-                
-            except Exception as e:
-                print(f"Update specification error: {e}")
-                return jsonify({'error': f'Failed to update specification: {str(e)}'}), 500
-        
-        elif request.method == 'DELETE':
-            try:
-                conn = get_db()
-                if not conn:
-                    return jsonify({'error': 'Database connection failed'}), 500
-                
-                cursor = conn.cursor(pymysql.cursors.DictCursor)
-                
-                # Delete specific specification
-                cursor.execute(
-                    "DELETE FROM product_specifications WHERE id = %s",
-                    (spec_id,)
-                )
-                deleted_count = cursor.rowcount
-                conn.commit()
-                conn.close()
-                
-                if deleted_count > 0:
-                    return jsonify({
-                        'message': f'Specification {spec_id} deleted successfully',
-                        'deleted_count': deleted_count
-                    }), 200
-                else:
-                    return jsonify({'error': 'Specification not found'}), 404
-                    
-            except Exception as e:
-                print(f"Delete specification error: {e}")
-                return jsonify({'error': f'Failed to delete specification: {str(e)}'}), 500
+        except Exception as e:
+            print(f"Delete specification error: {e}")
+            return jsonify({'error': f'Failed to delete specification: {str(e)}'}), 500
+
+
+# Import routes from separate files
+# Updated: Fixed duplicate route registrations
+from login_page import register_login_routes as _login_routes
+from dashboard_page import register_dashboard_routes as _dashboard_routes
+from categories_page import register_categories_routes as _categories_routes
+from customers_page import register_customers_routes as _customers_routes
+from products_page import register_products_routes as _products_routes
+from users_page import register_users_routes as _users_routes
+from profile_page import register_profile_routes as _profile_routes
+from regions_page import register_regions_routes as _regions_routes
+
+# Register imported routes (these are from separate page files)
+def register_all_imported_routes(app):
+    _login_routes(app)
+    _dashboard_routes(app)
+    _categories_routes(app)
+    _customers_routes(app)
+    _products_routes(app)
+    _users_routes(app)
+    _profile_routes(app)
+    _regions_routes(app)
+    try:
+        from service_tickets_page import register_service_tickets_routes as _service_tickets_routes
+        _service_tickets_routes(app)
+    except Exception as e:
+        print(f"Service tickets import failed: {e}")
+
+
+# Import routes from separate files
+from login_page import register_login_routes as _login_routes
+from dashboard_page import register_dashboard_routes as _dashboard_routes
+from categories_page import register_categories_routes as _categories_routes
+from customers_page import register_customers_routes as _customers_routes
+from products_page import register_products_routes as _products_routes
+from users_page import register_users_routes as _users_routes
+from profile_page import register_profile_routes as _profile_routes
+from regions_page import register_regions_routes as _regions_routes
+
+def register_all_imported_routes(app):
+    _login_routes(app)
+    _dashboard_routes(app)
+    _categories_routes(app)
+    _customers_routes(app)
+    _products_routes(app)
+    _users_routes(app)
+    _profile_routes(app)
+    _regions_routes(app)
+    try:
+        from service_tickets_page import register_service_tickets_routes as _service_tickets_routes
+        _service_tickets_routes(app)
+    except Exception as e:
+        print(f"Service tickets import failed: {e}")
