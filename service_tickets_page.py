@@ -170,7 +170,9 @@ def register_service_tickets_routes(app):
                 return jsonify({'error': 'Database connection failed'}), 500
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             
-
+            imported = 0
+            errors = []
+            duplicates = 0
             
             for idx, row in df.iterrows():
                 try:
