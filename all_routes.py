@@ -149,6 +149,125 @@ def register_product_images_routes(app):
             return jsonify({'error': str(e)}), 500
 
 def register_enquiries_routes(app):
+    @app.route('/api/v1/enquiries/import', methods=['POST'])
+    def import_enquiries():
+        """Import enquiries from Excel"""
+        try:
+            import pandas as pd
+            import openpyxl
+        except ImportError:
+            return jsonify({'error': 'Excel import requires pandas and openpyxl'}), 503
+        
+        conn = None
+        try:
+            if 'file' not in request.files:
+                return jsonify({'error': 'No file uploaded'}), 400
+            
+            file = request.files['file']
+            if not file.filename:
+                return jsonify({'error': 'No file selected'}), 400
+            
+            df = pd.read_excel(file, engine='openpyxl')
+            
+            conn = get_db()
+            if not conn:
+                return jsonify({'error': 'Database connection failed'}), 500
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+            
+            imported = 0
+            errors = []
+            duplicates = 0
+            
+            for idx, row in df.iterrows():
+                try:
+                    cust_name = str(row.get('Customer Name', '')).strip()
+                    cust_phone = str(row.get('Contact Number', '')).replace(' ', '').strip()
+                    product_name = str(row.get('Product', '')).strip() if pd.notna(row.get('Product')) else ''
+                    quantity = int(row.get('Quantity', 1)) if pd.notna(row.get('Quantity')) else 1
+                    message = str(row.get('Message', '')).strip() if pd.notna(row.get('Message')) else ''
+                    status = str(row.get('Status', 'NEW')).strip().upper()
+                    
+                    if not cust_name:
+                        errors.append(f"Row {idx+2}: Missing customer name")
+                        continue
+                    
+                    cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR (phone=%s AND phone!='') LIMIT 1", 
+                                 (cust_name, cust_phone))
+                    customer = cursor.fetchone()
+                    
+                    if not customer:
+                        cursor.execute("SELECT MAX(id) as max_id FROM customers")
+                        result = cursor.fetchone()
+                        next_cust_id = (result['max_id'] or 0) + 1
+                        customer_code = f"CUST{next_cust_id:06d}"
+                        
+                        cursor.execute("""
+                            INSERT INTO customers (customer_code, contact_person, phone, address, pin_code, created_at)
+                            VALUES (%s, %s, %s, %s, %s, NOW())
+                        """, (customer_code, cust_name, cust_phone[:15], '', ''))
+                        customer_id = cursor.lastrowid
+                    else:
+                        customer_id = customer['id']
+                    
+                    product_id = None
+                    if product_name:
+                        cursor.execute("SELECT id FROM products WHERE name=%s LIMIT 1", (product_name,))
+                        product = cursor.fetchone()
+                        if product:
+                            product_id = product['id']
+                    
+                    status_map = {'NEW': 'NEW', 'CONTACTED': 'CONTACTED', 'QUOTED': 'QUOTED', 'CONVERTED': 'CONVERTED', 'CLOSED': 'CLOSED'}
+                    status = status_map.get(status, 'NEW')
+                    
+                    cursor.execute("""
+                        SELECT id FROM enquiries 
+                        WHERE customer_id=%s AND message=%s AND status=%s
+                        LIMIT 1
+                    """, (customer_id, message, status))
+                    if cursor.fetchone():
+                        duplicates += 1
+                        continue
+                    
+                    cursor.execute("SELECT enquiry_number FROM enquiries ORDER BY id DESC LIMIT 1")
+                    last_enquiry = cursor.fetchone()
+                    if last_enquiry and last_enquiry['enquiry_number']:
+                        last_num = int(last_enquiry['enquiry_number'][3:])
+                        enquiry_number = f"ENQ{last_num + 1:06d}"
+                    else:
+                        enquiry_number = "ENQ000001"
+                    
+                    cursor.execute("""
+                        INSERT INTO enquiries 
+                        (enquiry_number, customer_id, product_id, quantity, message, status, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                    """, (enquiry_number, customer_id, product_id, quantity, message, status))
+                    imported += 1
+                    if imported % 10 == 0:
+                        conn.commit()
+                except Exception as e:
+                    errors.append(f"Row {idx+2}: {str(e)}")
+            
+            conn.commit()
+            conn.close()
+            
+            result = {
+                'message': f'{duplicates} duplicates removed. Imported {imported} enquiries.',
+                'imported': imported,
+                'total': len(df),
+                'duplicates': duplicates,
+                'errors': errors[:10]
+            }
+            return jsonify(result)
+            
+        except Exception as e:
+            if conn:
+                try:
+                    conn.rollback()
+                    conn.close()
+                except:
+                    pass
+            return jsonify({'error': str(e)}), 500
+    
     @app.route('/api/v1/enquiries/', methods=['GET', 'POST'])
     def handle_enquiries():
         print("DEBUG: handle_enquiries called with updated code - v2")  # Debug line
