@@ -1,303 +1,234 @@
-from flask import Flask, request, jsonify, send_from_directory, redirect
-from flask_cors import CORS
-from flask_jwt_extended import JWTManager
-from datetime import timedelta
-import os
-
-# Initialize Flask app
-app = Flask(__name__)
-
-# Configuration
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'change-this-in-production')
-<<<<<<< HEAD
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
-=======
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)  # 7 days
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)  # 30 days
->>>>>>> b95dea8cbabfb72d88454cae8b2b114526b16086
-
-# Initialize extensions
-jwt = JWTManager(app)
-
-# JWT error handlers
-@jwt.expired_token_loader
-def expired_token_callback(jwt_header, jwt_payload):
-<<<<<<< HEAD
-    return jsonify({'error': 'Token has expired'}), 401
-
-@jwt.invalid_token_loader
-def invalid_token_callback(error):
-    return jsonify({'error': 'Invalid token'}), 401
-
-@jwt.unauthorized_loader
-def missing_token_callback(error):
-    return jsonify({'error': 'Authorization token is missing'}), 401
-
-CORS(app, 
-     origins=['*'],
-=======
-    return jsonify({'error': 'Token has expired', 'code': 'token_expired'}), 401
-
-@jwt.invalid_token_loader
-def invalid_token_callback(error):
-    return jsonify({'error': 'Invalid token', 'code': 'invalid_token'}), 401
-
-@jwt.unauthorized_loader
-def missing_token_callback(error):
-    return jsonify({'error': 'Authorization token is missing', 'code': 'missing_token'}), 401
-
-# CORS configuration - allow frontend domain
-allowed_origins = [
-    'http://localhost:3000',
-    'https://ostrich-mobility-webapp-frontend-iv7a1q5ru.vercel.app',
-    'https://ostrich-mobility-webapp-frontend.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-cv3rmupqy.vercel.app'
-]
-
-CORS(app, 
-     origins=allowed_origins, 
->>>>>>> b95dea8cbabfb72d88454cae8b2b114526b16086
-     supports_credentials=True,
-     allow_headers=['Content-Type', 'Authorization'],
-     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
-
-<<<<<<< HEAD
-# Explicitly add the Vercel frontend URL
-ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'https://ostrich-mobility-webapp-frontend-3lxjrmef8.vercel.app',
-    'https://ostrich-mobility-webapp-frontend.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-emaeg8you.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-40riormqu.vercel.app',
-    'https://ostrich-mobility-webapp-frontend-hjetropff.vercel.app'
-]
-
-=======
->>>>>>> b95dea8cbabfb72d88454cae8b2b114526b16086
-# Static file serving
-@app.route('/static/uploads/<filename>')
-def uploaded_file(filename):
-    return jsonify({'error': 'File not found'}), 404
-
-@app.route('/uploads/products/<filename>')
-def serve_product_image(filename):
-    return jsonify({'error': 'Images served from cloud'}), 404
-
-# Handle preflight requests globally
-@app.before_request
-def handle_preflight():
-    if request.method == "OPTIONS":
-        response = jsonify()
-        origin = request.headers.get('Origin')
-<<<<<<< HEAD
-        response.headers.add("Access-Control-Allow-Origin", origin or "*")
-=======
-        if origin in allowed_origins:
-            response.headers.add("Access-Control-Allow-Origin", origin)
->>>>>>> b95dea8cbabfb72d88454cae8b2b114526b16086
-        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
-        response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS")
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
-
-<<<<<<< HEAD
-# Add CORS headers to all responses
-@app.after_request
-def after_request(response):
-    origin = request.headers.get('Origin')
-    if origin and origin in ALLOWED_ORIGINS:
-        response.headers['Access-Control-Allow-Origin'] = origin
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
-        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-    return response
-
-# Import and register routes
-try:
-    from login_page import register_login_routes
-    register_login_routes(app)
-except Exception as e:
-    print(f"Error loading login_page: {e}")
+from flask import jsonify, request
+from flask_jwt_extended import jwt_required
+from database import get_db
+import pymysql
+from datetime import datetime
 
 try:
-    from dashboard_page import register_dashboard_routes
-    register_dashboard_routes(app)
-except Exception as e:
-    print(f"Error loading dashboard_page: {e}")
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
 
-try:
-    from customers_page import register_customers_routes
-    register_customers_routes(app)
-except Exception as e:
-    print(f"Error loading customers_page: {e}")
-
-try:
-    from enhanced_categories_page import register_categories_routes
-    register_categories_routes(app)
-except Exception as e:
-    print(f"Error loading enhanced_categories_page: {e}")
-
-try:
-    from products_page import register_products_routes
-    register_products_routes(app)
-except Exception as e:
-    print(f"Error loading products_page: {e}")
-
-try:
-    from service_tickets_page import register_service_tickets_routes
-    register_service_tickets_routes(app)
-    print("✓ service_tickets_page loaded successfully")
-except Exception as e:
-    print(f"Error loading service_tickets_page: {e}")
-    # Add fallback route
+def register_service_tickets_routes(app):
+    """Register service tickets routes"""
+    
     @app.route('/api/v1/service-tickets/', methods=['GET'])
-    def fallback_service_tickets():
-        return jsonify({'error': 'Service tickets module failed to load', 'details': str(e)}), 503
-
-try:
-    from stock_fix_routes import register_stock_fix_routes
-    register_stock_fix_routes(app)
-except Exception as e:
-    print(f"Error loading stock_fix_routes: {e}")
-
-try:
-    from customer_auth import register_customer_auth_routes
-    register_customer_auth_routes(app)
-except Exception as e:
-    print(f"Error loading customer_auth: {e}")
-
-try:
-    from product_images_routes import register_product_images_routes as register_product_images_api_routes
-    register_product_images_api_routes(app)
-except Exception as e:
-    print(f"Error loading product_images_routes: {e}")
-
-try:
-    from regions_page import register_regions_routes
-    register_regions_routes(app)
-except Exception as e:
-    print(f"Error loading regions_page: {e}")
-
-try:
-    from users_page import register_users_routes
-    register_users_routes(app)
-except Exception as e:
-    print(f"Error loading users_page: {e}")
-
-try:
-    from profile_page import register_profile_routes
-    register_profile_routes(app)
-except Exception as e:
-    print(f"Error loading profile_page: {e}")
-
-try:
-    from all_routes import (register_product_images_routes, register_enquiries_routes,
-                           register_service_routes, register_sales_routes,
-                           register_dispatch_routes, register_reports_routes,
-                           register_notifications_routes, register_specifications_routes)
-    register_product_images_routes(app)
-    register_enquiries_routes(app)
-    register_service_routes(app)
-    register_sales_routes(app)
-    register_dispatch_routes(app)
-    register_reports_routes(app)
-    register_notifications_routes(app)
-    register_specifications_routes(app)
-except Exception as e:
-    print(f"Error loading all_routes: {e}")
-
-# Health check
-=======
-# Import all routes from consolidated file
-from all_routes import (
-    register_product_images_routes as register_product_images_basic,
-    register_enquiries_routes,
-    register_service_routes,
-    register_sales_routes,
-    register_dispatch_routes,
-    register_reports_routes,
-    register_notifications_routes,
-    register_specifications_routes,
-    register_all_imported_routes
-)
-from stock_fix_routes import register_stock_fix_routes
-from customer_auth import register_customer_auth_routes
-from product_images_routes import register_product_images_routes as register_product_images_advanced
-
-# Register all routes
-register_product_images_basic(app)  # Basic product images routes from all_routes.py
-register_enquiries_routes(app)
-register_service_routes(app)
-register_sales_routes(app)
-register_dispatch_routes(app)
-register_reports_routes(app)
-register_notifications_routes(app)
-register_specifications_routes(app)
-register_stock_fix_routes(app)
-register_customer_auth_routes(app)
-register_product_images_advanced(app)  # Advanced product images routes from product_images_routes.py
-register_all_imported_routes(app)  # Routes from separate page files
-
-# Health check
-@app.route('/')
-def root():
-    return {'message': 'Ostrich Mobility Backend API', 'status': 'running', 'version': '1.0'}
-
->>>>>>> b95dea8cbabfb72d88454cae8b2b114526b16086
-@app.route('/api/v1/health')
-def health_check():
-    from datetime import datetime
-    return {'status': 'healthy', 'timestamp': datetime.now().isoformat()}
-
-# Debug endpoint to test validation without JWT
-@app.route('/api/v1/test-validation', methods=['POST'])
-def test_validation():
-    data = request.get_json()
-    
-    # Test the same validation logic
-    if not data.get('customer_id'):
-        return jsonify({'error': 'Customer is required'}), 400
-    
-    status = data.get('status', 'new')
-    valid_statuses = ['new', 'contacted', 'quoted', 'converted', 'closed']
-    if status not in valid_statuses:
-        return jsonify({'error': f'Invalid status. Must be one of: {valid_statuses}'}), 400
-    
-    # Test date validation
-    if data.get('follow_up_date'):
+    @jwt_required(optional=True)
+    def get_service_tickets():
+        """Get all service tickets with customer and product details"""
         try:
-            from datetime import datetime
-            date_str = data['follow_up_date']
-            if 'T' in date_str:
-                follow_up_date = datetime.fromisoformat(date_str.replace('Z', ''))
-            else:
-                follow_up_date = datetime.strptime(date_str, '%Y-%m-%d')
+            conn = get_db()
+            if not conn:
+                return jsonify([])
             
-            # Validate date is not in the past (allow today)
-            today = datetime.now().date()
-            if follow_up_date.date() < today:
-                return jsonify({'error': 'Follow-up date cannot be in the past'}), 400
-                
-        except ValueError:
-            return jsonify({'error': 'Invalid follow-up date format. Use YYYY-MM-DD'}), 400
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+            cursor.execute("""
+                SELECT 
+                    st.*,
+                    c.contact_person as customer_name,
+                    c.phone as customer_phone,
+                    c.email as customer_email,
+                    c.city as customer_city,
+                    c.state as customer_state,
+                    p.name as product_name,
+                    pc.name as product_category,
+                    u.first_name as engineer_first_name,
+                    u.last_name as engineer_last_name
+                FROM service_tickets st
+                LEFT JOIN customers c ON st.customer_id = c.id
+                LEFT JOIN products p ON st.product_id = p.id
+                LEFT JOIN product_categories pc ON p.category_id = pc.id
+                LEFT JOIN users u ON st.assigned_staff_id = u.id
+                ORDER BY st.id DESC
+            """)
+            tickets = cursor.fetchall()
+            conn.close()
+            return jsonify(tickets)
+            
         except Exception as e:
-            return jsonify({'error': 'Invalid follow-up date'}), 400
+            print(f"Get service tickets error: {e}")
+            return jsonify([])
     
-    return jsonify({'message': 'Validation passed', 'server': 'webappbackend'})
-
-if __name__ == '__main__':
-<<<<<<< HEAD
-    print("Starting Ostrich Web App Backend... v2.1")  # Force reload
-    print("Login: admin / admin123")
-    print("Server: http://localhost:8002")
-    print("Available endpoints:")
-    print("- POST /api/v1/auth/login")
-    print("- GET /api/v1/dashboard/analytics")
-    print("- GET /api/v1/notifications/unread-count")
-    app.run(debug=True, host='0.0.0.0', port=8002)
-=======
-    port = int(os.getenv('PORT', 8002))
-    print("Starting Ostrich Web App Backend...")
-    print(f"Server: http://0.0.0.0:{port}")
-    app.run(debug=False, host='0.0.0.0', port=port)
->>>>>>> b95dea8cbabfb72d88454cae8b2b114526b16086
+    @app.route('/api/v1/service-tickets/', methods=['POST'])
+    @jwt_required(optional=True)
+    def create_service_ticket():
+        """Create new service ticket"""
+        try:
+            data = request.get_json()
+            conn = get_db()
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT MAX(id) as max_id FROM service_tickets")
+            result = cursor.fetchone()
+            next_id = (result[0] or 0) + 1
+            ticket_number = f"TKT{next_id:06d}"
+            
+            cursor.execute("""
+                INSERT INTO service_tickets 
+                (ticket_number, customer_id, product_id, issue_description, priority, status, 
+                assigned_staff_id, warranty_status, resolution_details, remarks)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                ticket_number,
+                data.get('customer_id'),
+                data.get('product_id'),
+                data.get('issue_description'),
+                data.get('priority', 'MEDIUM'),
+                data.get('status', 'OPEN'),
+                data.get('assigned_staff_id'),
+                data.get('warranty_status', 'No'),
+                data.get('resolution_details'),
+                data.get('remarks')
+            ))
+            
+            conn.commit()
+            conn.close()
+            return jsonify({'message': 'Service ticket created', 'ticket_number': ticket_number})
+            
+        except Exception as e:
+            print(f"Create service ticket error: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/service-tickets/<int:ticket_id>', methods=['PUT'])
+    @jwt_required(optional=True)
+    def update_service_ticket(ticket_id):
+        """Update service ticket"""
+        try:
+            data = request.get_json()
+            conn = get_db()
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                UPDATE service_tickets 
+                SET customer_id=%s, product_id=%s, issue_description=%s, priority=%s, 
+                    status=%s, assigned_staff_id=%s, warranty_status=%s, resolution_details=%s, remarks=%s
+                WHERE id=%s
+            """, (
+                data.get('customer_id'),
+                data.get('product_id'),
+                data.get('issue_description'),
+                data.get('priority'),
+                data.get('status'),
+                data.get('assigned_staff_id'),
+                data.get('warranty_status'),
+                data.get('resolution_details'),
+                data.get('remarks'),
+                ticket_id
+            ))
+            
+            conn.commit()
+            conn.close()
+            return jsonify({'message': 'Service ticket updated'})
+            
+        except Exception as e:
+            print(f"Update service ticket error: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/service-tickets/<int:ticket_id>', methods=['DELETE'])
+    @jwt_required(optional=True)
+    def delete_service_ticket(ticket_id):
+        """Delete service ticket"""
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM service_tickets WHERE id=%s", (ticket_id,))
+            conn.commit()
+            conn.close()
+            return jsonify({'message': 'Service ticket deleted'})
+            
+        except Exception as e:
+            print(f"Delete service ticket error: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/service-tickets/import', methods=['POST'])
+    @jwt_required(optional=True)
+    def import_service_tickets():
+        """Import service tickets from Excel"""
+        if not PANDAS_AVAILABLE:
+            return jsonify({'error': 'Excel import not available'}), 503
+        
+        try:
+            if 'file' not in request.files:
+                return jsonify({'error': 'No file uploaded'}), 400
+            
+            file = request.files['file']
+            df = pd.read_excel(file)
+            
+            conn = get_db()
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+            
+            imported = 0
+            errors = []
+            
+            for idx, row in df.iterrows():
+                try:
+                    cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR phone=%s LIMIT 1", 
+                                 (row.get('Customer Name'), row.get('Contact Number')))
+                    customer = cursor.fetchone()
+                    if not customer:
+                        errors.append(f"Row {idx+2}: Customer not found")
+                        continue
+                    
+                    product_id = None
+                    if pd.notna(row.get('Product Model')):
+                        cursor.execute("SELECT id FROM products WHERE name=%s LIMIT 1", (row.get('Product Model'),))
+                        product = cursor.fetchone()
+                        if product:
+                            product_id = product['id']
+                    
+                    engineer_id = None
+                    if pd.notna(row.get('Service Engineer Assigned')):
+                        names = str(row.get('Service Engineer Assigned')).split()
+                        if len(names) >= 2:
+                            cursor.execute("SELECT id FROM users WHERE first_name=%s AND last_name=%s LIMIT 1", 
+                                         (names[0], names[-1]))
+                            engineer = cursor.fetchone()
+                            if engineer:
+                                engineer_id = engineer['id']
+                    
+                    cursor.execute("SELECT MAX(id) as max_id FROM service_tickets")
+                    result = cursor.fetchone()
+                    next_id = (result['max_id'] or 0) + 1
+                    ticket_number = f"TKT{next_id:06d}"
+                    
+                    priority_map = {'Low': 'LOW', 'Medium': 'MEDIUM', 'High': 'HIGH', 'Critical': 'CRITICAL'}
+                    priority = priority_map.get(row.get('Priority'), 'MEDIUM')
+                    
+                    status_map = {'Open': 'OPEN', 'In Progress': 'IN_PROGRESS', 'Completed': 'RESOLVED', 'Closed': 'CLOSED'}
+                    status = status_map.get(row.get('Status'), 'OPEN')
+                    
+                    cursor.execute("""
+                        INSERT INTO service_tickets 
+                        (ticket_number, customer_id, product_id, issue_description, priority, status, 
+                        assigned_staff_id, warranty_status, resolution_details, remarks, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        ticket_number,
+                        customer['id'],
+                        product_id,
+                        row.get('Issue Reported', ''),
+                        priority,
+                        status,
+                        engineer_id,
+                        row.get('Warranty Status', 'No'),
+                        row.get('Resolution Details', ''),
+                        row.get('Remarks', ''),
+                        pd.to_datetime(row.get('Issue Reported Date')) if pd.notna(row.get('Issue Reported Date')) else datetime.now()
+                    ))
+                    imported += 1
+                except Exception as e:
+                    errors.append(f"Row {idx+2}: {str(e)}")
+            
+            conn.commit()
+            conn.close()
+            
+            return jsonify({
+                'message': f'Imported {imported} tickets',
+                'imported': imported,
+                'errors': errors
+            })
+            
+        except Exception as e:
+            print(f"Import error: {e}")
+            return jsonify({'error': str(e)}), 500
