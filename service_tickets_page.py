@@ -3,9 +3,13 @@ from flask_jwt_extended import jwt_required
 from database import get_db
 from cache_config import cache_response, clear_cache_pattern
 import pymysql
-import pandas as pd
-from io import BytesIO
 from datetime import datetime
+
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
 
 def register_service_tickets_routes(app):
     """Register service tickets routes"""
@@ -147,6 +151,9 @@ def register_service_tickets_routes(app):
     @jwt_required(optional=True)
     def import_service_tickets():
         """Import service tickets from Excel"""
+        if not PANDAS_AVAILABLE:
+            return jsonify({'error': 'Excel import not available'}), 503
+        
         try:
             if 'file' not in request.files:
                 return jsonify({'error': 'No file uploaded'}), 400
