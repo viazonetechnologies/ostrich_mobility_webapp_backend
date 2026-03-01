@@ -1,7 +1,6 @@
 from flask import jsonify, request, send_file
 from flask_jwt_extended import jwt_required
 from database import get_db
-from cache_config import cache_response, clear_cache_pattern
 import pymysql
 from datetime import datetime
 
@@ -16,7 +15,6 @@ def register_service_tickets_routes(app):
     
     @app.route('/api/v1/service-tickets/', methods=['GET'])
     @jwt_required(optional=True)
-    @cache_response(timeout=30)
     def get_service_tickets():
         """Get all service tickets with customer and product details"""
         try:
