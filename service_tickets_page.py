@@ -154,7 +154,12 @@ def register_service_tickets_routes(app):
                 return jsonify({'error': 'No file uploaded'}), 400
             
             file = request.files['file']
+            if not file.filename:
+                return jsonify({'error': 'No file selected'}), 400
+                
+            print(f"Processing file: {file.filename}")
             df = pd.read_excel(file, engine='openpyxl')
+            print(f"Excel loaded: {len(df)} rows, columns: {list(df.columns)}")
             
             conn = get_db()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -240,12 +245,18 @@ def register_service_tickets_routes(app):
             conn.commit()
             conn.close()
             
-            return jsonify({
-                'message': f'Imported {imported} tickets',
+            result = {
+                'message': f'Imported {imported} of {len(df)} tickets',
                 'imported': imported,
-                'errors': errors
-            })
+                'total': len(df),
+                'errors': errors[:10]  # Limit to first 10 errors
+            }
+            print(f"Import complete: {result}")
+            return jsonify(result)
             
         except Exception as e:
-            print(f"Import error: {e}")
-            return jsonify({'error': str(e)}), 500
+            error_msg = str(e)
+            print(f"Import error: {error_msg}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': error_msg}), 500
