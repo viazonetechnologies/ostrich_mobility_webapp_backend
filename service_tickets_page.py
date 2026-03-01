@@ -209,6 +209,15 @@ def register_service_tickets_routes(app):
                     else:
                         customer_id = customer['id']
                     
+                    # Parse priority and status first
+                    priority_str = str(row.get('Issue priority', 'Medium')).strip().title()
+                    priority_map = {'Low': 'LOW', 'Medium': 'MEDIUM', 'High': 'HIGH', 'Critical': 'CRITICAL'}
+                    priority = priority_map.get(priority_str, 'MEDIUM')
+                    
+                    status_str = str(row.get('Status', 'Open')).strip().title()
+                    status_map = {'Open': 'OPEN', 'In Progress': 'IN_PROGRESS', 'Completed': 'CLOSED', 'Closed': 'CLOSED', 'Resolved': 'RESOLVED'}
+                    status = status_map.get(status_str, 'OPEN')
+                    
                     # Check for duplicate ticket - check all key fields
                     cursor.execute("""
                         SELECT id FROM service_tickets 
@@ -243,14 +252,6 @@ def register_service_tickets_routes(app):
                     result = cursor.fetchone()
                     next_id = (result['max_id'] or 0) + 1
                     ticket_number = f"TKT{next_id:06d}"
-                    
-                    priority_str = str(row.get('Issue priority', 'Medium')).strip().title()
-                    priority_map = {'Low': 'LOW', 'Medium': 'MEDIUM', 'High': 'HIGH', 'Critical': 'CRITICAL'}
-                    priority = priority_map.get(priority_str, 'MEDIUM')
-                    
-                    status_str = str(row.get('Status', 'Open')).strip().title()
-                    status_map = {'Open': 'OPEN', 'In Progress': 'IN_PROGRESS', 'Completed': 'CLOSED', 'Closed': 'CLOSED', 'Resolved': 'RESOLVED'}
-                    status = status_map.get(status_str, 'OPEN')
                     
                     warranty = str(row.get('Within Warranty or OUT side Warranty', 'NO')).strip().upper()
                     warranty_status = 'Yes' if warranty.startswith('YES') or warranty.startswith('WITHIN') else 'No'
