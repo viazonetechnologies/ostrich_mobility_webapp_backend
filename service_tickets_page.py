@@ -1,4 +1,4 @@
-from flask import jsonify, request, send_file
+from flask import jsonify, request
 from flask_jwt_extended import jwt_required
 from database import get_db
 import pymysql
@@ -6,6 +6,7 @@ from datetime import datetime
 
 try:
     import pandas as pd
+    import openpyxl
     PANDAS_AVAILABLE = True
 except ImportError:
     PANDAS_AVAILABLE = False
@@ -59,7 +60,6 @@ def register_service_tickets_routes(app):
             conn = get_db()
             cursor = conn.cursor()
             
-            # Generate ticket number
             cursor.execute("SELECT MAX(id) as max_id FROM service_tickets")
             result = cursor.fetchone()
             next_id = (result[0] or 0) + 1
@@ -85,7 +85,6 @@ def register_service_tickets_routes(app):
             
             conn.commit()
             conn.close()
-            clear_cache_pattern('/api/v1/service-tickets/')
             return jsonify({'message': 'Service ticket created', 'ticket_number': ticket_number})
             
         except Exception as e:
@@ -121,7 +120,6 @@ def register_service_tickets_routes(app):
             
             conn.commit()
             conn.close()
-            clear_cache_pattern('/api/v1/service-tickets/')
             return jsonify({'message': 'Service ticket updated'})
             
         except Exception as e:
@@ -138,7 +136,6 @@ def register_service_tickets_routes(app):
             cursor.execute("DELETE FROM service_tickets WHERE id=%s", (ticket_id,))
             conn.commit()
             conn.close()
-            clear_cache_pattern('/api/v1/service-tickets/')
             return jsonify({'message': 'Service ticket deleted'})
             
         except Exception as e:
@@ -150,14 +147,14 @@ def register_service_tickets_routes(app):
     def import_service_tickets():
         """Import service tickets from Excel"""
         if not PANDAS_AVAILABLE:
-            return jsonify({'error': 'Excel import not available'}), 503
+            return jsonify({'error': 'Excel import requires pandas and openpyxl'}), 503
         
         try:
             if 'file' not in request.files:
                 return jsonify({'error': 'No file uploaded'}), 400
             
             file = request.files['file']
-            df = pd.read_excel(file)
+            df = pd.read_excel(file, engine='openpyxl')
             
             conn = get_db()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -167,7 +164,6 @@ def register_service_tickets_routes(app):
             
             for idx, row in df.iterrows():
                 try:
-                    # Find customer by name or phone
                     cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR phone=%s LIMIT 1", 
                                  (row.get('Customer Name'), row.get('Contact Number')))
                     customer = cursor.fetchone()
@@ -175,7 +171,6 @@ def register_service_tickets_routes(app):
                         errors.append(f"Row {idx+2}: Customer not found")
                         continue
                     
-                    # Find product by name
                     product_id = None
                     if pd.notna(row.get('Product Model')):
                         cursor.execute("SELECT id FROM products WHERE name=%s LIMIT 1", (row.get('Product Model'),))
@@ -183,7 +178,6 @@ def register_service_tickets_routes(app):
                         if product:
                             product_id = product['id']
                     
-                    # Find engineer by name
                     engineer_id = None
                     if pd.notna(row.get('Service Engineer Assigned')):
                         names = str(row.get('Service Engineer Assigned')).split()
@@ -194,17 +188,14 @@ def register_service_tickets_routes(app):
                             if engineer:
                                 engineer_id = engineer['id']
                     
-                    # Generate ticket number
                     cursor.execute("SELECT MAX(id) as max_id FROM service_tickets")
                     result = cursor.fetchone()
                     next_id = (result['max_id'] or 0) + 1
                     ticket_number = f"TKT{next_id:06d}"
                     
-                    # Map priority
                     priority_map = {'Low': 'LOW', 'Medium': 'MEDIUM', 'High': 'HIGH', 'Critical': 'CRITICAL'}
                     priority = priority_map.get(row.get('Priority'), 'MEDIUM')
                     
-                    # Map status
                     status_map = {'Open': 'OPEN', 'In Progress': 'IN_PROGRESS', 'Completed': 'RESOLVED', 'Closed': 'CLOSED'}
                     status = status_map.get(row.get('Status'), 'OPEN')
                     
@@ -232,7 +223,6 @@ def register_service_tickets_routes(app):
             
             conn.commit()
             conn.close()
-            clear_cache_pattern('/api/v1/service-tickets/')
             
             return jsonify({
                 'message': f'Imported {imported} tickets',
