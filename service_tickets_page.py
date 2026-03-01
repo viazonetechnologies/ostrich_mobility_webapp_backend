@@ -174,14 +174,19 @@ def register_service_tickets_routes(app):
                     cust_email = str(row.get('Customer Email ID', '')).strip() if pd.notna(row.get('Customer Email ID')) else ''
                     cust_city = str(row.get('Customer Location-CITY', '')).strip() if pd.notna(row.get('Customer Location-CITY')) else ''
                     cust_state = str(row.get('Customer Location - STATE', '')).strip() if pd.notna(row.get('Customer Location - STATE')) else ''
+                    issue_desc = str(row.get('Issue Reported', '')).strip()
                     
                     if not cust_name:
                         errors.append(f"Row {idx+2}: Missing customer name")
                         continue
                     
-                    cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR phone=%s LIMIT 1", 
+                    cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR (phone=%s AND phone!='') LIMIT 1", 
                                  (cust_name, cust_phone))
                     customer = cursor.fetchone()
+                    
+                    if not customer and cust_phone:
+                        cursor.execute("SELECT id FROM customers WHERE phone LIKE %s LIMIT 1", (f"%{cust_phone[-10:]}%",))
+                        customer = cursor.fetchone()
                     
                     if not customer:
                         cursor.execute("""
@@ -191,6 +196,16 @@ def register_service_tickets_routes(app):
                         customer_id = cursor.lastrowid
                     else:
                         customer_id = customer['id']
+                    
+                    # Check for duplicate ticket
+                    cursor.execute("""
+                        SELECT id FROM service_tickets 
+                        WHERE customer_id=%s AND issue_description=%s AND DATE(created_at)=DATE(%s)
+                        LIMIT 1
+                    """, (customer_id, issue_desc, datetime.now()))
+                    if cursor.fetchone():
+                        errors.append(f"Row {idx+2}: Duplicate ticket for '{cust_name}' with same issue today")
+                        continue
                     
                     product_id = None
                     if pd.notna(row.get('Product Model')):
