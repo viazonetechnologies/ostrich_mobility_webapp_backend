@@ -164,11 +164,14 @@ def register_service_tickets_routes(app):
             
             for idx, row in df.iterrows():
                 try:
+                    cust_name = row.get('Customer Name', '')
+                    cust_phone = str(row.get('Contact Number', '')).strip()
+                    
                     cursor.execute("SELECT id FROM customers WHERE contact_person=%s OR phone=%s LIMIT 1", 
-                                 (row.get('Customer Name'), row.get('Contact Number')))
+                                 (cust_name, cust_phone))
                     customer = cursor.fetchone()
                     if not customer:
-                        errors.append(f"Row {idx+2}: Customer not found")
+                        errors.append(f"Row {idx+2}: Customer '{cust_name}' not found")
                         continue
                     
                     product_id = None
@@ -179,11 +182,11 @@ def register_service_tickets_routes(app):
                             product_id = product['id']
                     
                     engineer_id = None
-                    if pd.notna(row.get('Service Engineer Assigned')):
-                        names = str(row.get('Service Engineer Assigned')).split()
-                        if len(names) >= 2:
-                            cursor.execute("SELECT id FROM users WHERE first_name=%s AND last_name=%s LIMIT 1", 
-                                         (names[0], names[-1]))
+                    engineer_name = row.get('Name of the Service Engineer Assigned', '')
+                    if pd.notna(engineer_name) and engineer_name:
+                        names = str(engineer_name).split()
+                        if len(names) >= 1:
+                            cursor.execute("SELECT id FROM users WHERE first_name=%s LIMIT 1", (names[0],))
                             engineer = cursor.fetchone()
                             if engineer:
                                 engineer_id = engineer['id']
@@ -193,11 +196,23 @@ def register_service_tickets_routes(app):
                     next_id = (result['max_id'] or 0) + 1
                     ticket_number = f"TKT{next_id:06d}"
                     
+                    priority_str = str(row.get('Issue priority', 'Medium')).strip().title()
                     priority_map = {'Low': 'LOW', 'Medium': 'MEDIUM', 'High': 'HIGH', 'Critical': 'CRITICAL'}
-                    priority = priority_map.get(row.get('Priority'), 'MEDIUM')
+                    priority = priority_map.get(priority_str, 'MEDIUM')
                     
-                    status_map = {'Open': 'OPEN', 'In Progress': 'IN_PROGRESS', 'Completed': 'RESOLVED', 'Closed': 'CLOSED'}
-                    status = status_map.get(row.get('Status'), 'OPEN')
+                    status_str = str(row.get('Status', 'Open')).strip().title()
+                    status_map = {'Open': 'OPEN', 'In Progress': 'IN_PROGRESS', 'Completed': 'CLOSED', 'Closed': 'CLOSED', 'Resolved': 'RESOLVED'}
+                    status = status_map.get(status_str, 'OPEN')
+                    
+                    warranty = str(row.get('Within Warranty or OUT side Warranty', 'NO')).strip().upper()
+                    warranty_status = 'Yes' if warranty.startswith('YES') or warranty.startswith('WITHIN') else 'No'
+                    
+                    issue_date = datetime.now()
+                    if pd.notna(row.get('Issue Reported Date')):
+                        try:
+                            issue_date = pd.to_datetime(row.get('Issue Reported Date'), dayfirst=True)
+                        except:
+                            pass
                     
                     cursor.execute("""
                         INSERT INTO service_tickets 
@@ -212,14 +227,15 @@ def register_service_tickets_routes(app):
                         priority,
                         status,
                         engineer_id,
-                        row.get('Warranty Status', 'No'),
+                        warranty_status,
                         row.get('Resolution Details', ''),
                         row.get('Remarks', ''),
-                        pd.to_datetime(row.get('Issue Reported Date')) if pd.notna(row.get('Issue Reported Date')) else datetime.now()
+                        issue_date
                     ))
                     imported += 1
                 except Exception as e:
                     errors.append(f"Row {idx+2}: {str(e)}")
+                    print(f"Import row {idx+2} error: {e}")
             
             conn.commit()
             conn.close()
