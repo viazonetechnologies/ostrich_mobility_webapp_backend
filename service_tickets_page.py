@@ -230,8 +230,11 @@ def register_service_tickets_routes(app):
                     if pd.notna(engineer_name) and engineer_name:
                         names = str(engineer_name).split()
                         if len(names) >= 1:
-                            cursor.execute("SELECT id FROM users WHERE first_name=%s LIMIT 1", (names[0],))
+                            cursor.execute("SELECT id FROM users WHERE first_name=%s AND role='service_staff' LIMIT 1", (names[0],))
                             engineer = cursor.fetchone()
+                            if not engineer:
+                                cursor.execute("SELECT id FROM users WHERE first_name=%s LIMIT 1", (names[0],))
+                                engineer = cursor.fetchone()
                             if engineer:
                                 engineer_id = engineer['id']
                     
