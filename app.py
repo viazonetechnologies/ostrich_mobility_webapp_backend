@@ -80,7 +80,31 @@ from stock_fix_routes import register_stock_fix_routes
 from customer_auth import register_customer_auth_routes
 from product_images_routes import register_product_images_routes as register_product_images_advanced
 
-# Register all routes
+try:
+    from login_page import register_login_routes
+    from dashboard_page import register_dashboard_routes
+    from categories_page import register_categories_routes
+    from customers_page import register_customers_routes
+    from products_page import register_products_routes
+    from users_page import register_users_routes
+    from profile_page import register_profile_routes
+    from regions_page import register_regions_routes
+    
+    # Register all routes
+    register_login_routes(app)
+    register_dashboard_routes(app)
+    register_categories_routes(app)
+    register_customers_routes(app)
+    register_products_routes(app)
+    register_users_routes(app)
+    register_profile_routes(app)
+    register_regions_routes(app)
+    print("✓ Page routes registered")
+except Exception as e:
+    print(f"Page routes import error: {e}")
+    import traceback
+    traceback.print_exc()
+
 register_product_images_basic(app)
 register_enquiries_routes(app)
 register_service_routes(app)
@@ -93,11 +117,10 @@ register_stock_fix_routes(app)
 register_customer_auth_routes(app)
 register_product_images_advanced(app)
 
-# Try to register service tickets if available
 try:
     from service_tickets_page import register_service_tickets_routes
     register_service_tickets_routes(app)
-    print("✓ Service tickets routes registered")
+    print("✓ Service tickets registered")
 except Exception as e:
     print(f"Service tickets not available: {e}")
 
