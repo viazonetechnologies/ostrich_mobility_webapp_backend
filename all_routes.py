@@ -1781,6 +1781,7 @@ from products_page import register_products_routes as _products_routes
 from users_page import register_users_routes as _users_routes
 from profile_page import register_profile_routes as _profile_routes
 from regions_page import register_regions_routes as _regions_routes
+from service_tickets_page import register_service_tickets_routes as _service_tickets_routes
 
 # Register imported routes (these are from separate page files)
 def register_all_imported_routes(app):
@@ -1792,34 +1793,4 @@ def register_all_imported_routes(app):
     _users_routes(app)
     _profile_routes(app)
     _regions_routes(app)
-    try:
-        from service_tickets_page import register_service_tickets_routes as _service_tickets_routes
-        _service_tickets_routes(app)
-    except Exception as e:
-        print(f"Service tickets import failed: {e}")
-
-
-# Import routes from separate files
-from login_page import register_login_routes as _login_routes
-from dashboard_page import register_dashboard_routes as _dashboard_routes
-from categories_page import register_categories_routes as _categories_routes
-from customers_page import register_customers_routes as _customers_routes
-from products_page import register_products_routes as _products_routes
-from users_page import register_users_routes as _users_routes
-from profile_page import register_profile_routes as _profile_routes
-from regions_page import register_regions_routes as _regions_routes
-
-def register_all_imported_routes(app):
-    _login_routes(app)
-    _dashboard_routes(app)
-    _categories_routes(app)
-    _customers_routes(app)
-    _products_routes(app)
-    _users_routes(app)
-    _profile_routes(app)
-    _regions_routes(app)
-    try:
-        from service_tickets_page import register_service_tickets_routes as _service_tickets_routes
-        _service_tickets_routes(app)
-    except Exception as e:
-        print(f"Service tickets import failed: {e}")
+    _service_tickets_routes(app)
