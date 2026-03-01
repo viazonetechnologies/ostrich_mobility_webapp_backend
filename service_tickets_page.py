@@ -170,8 +170,7 @@ def register_service_tickets_routes(app):
                 return jsonify({'error': 'Database connection failed'}), 500
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             
-            imported = 0
-            errors = []
+
             
             for idx, row in df.iterrows():
                 try:
@@ -215,7 +214,7 @@ def register_service_tickets_routes(app):
                         LIMIT 1
                     """, (customer_id, issue_desc, priority, status))
                     if cursor.fetchone():
-                        errors.append(f"Row {idx+2}: Duplicate - identical ticket already exists")
+                        duplicates += 1
                         continue
                     
                     product_id = None
@@ -290,10 +289,11 @@ def register_service_tickets_routes(app):
             conn.close()
             
             result = {
-                'message': f'Imported {imported} of {len(df)} tickets',
+                'message': f'{duplicates} duplicates removed. Imported {imported} tickets.',
                 'imported': imported,
                 'total': len(df),
-                'errors': errors[:10]  # Limit to first 10 errors
+                'duplicates': duplicates,
+                'errors': errors[:10]
             }
             print(f"Import complete: {result}")
             return jsonify(result)
