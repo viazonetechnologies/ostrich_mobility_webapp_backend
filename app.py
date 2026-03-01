@@ -93,13 +93,6 @@ register_stock_fix_routes(app)
 register_customer_auth_routes(app)
 register_product_images_advanced(app)
 
-# Try to import and register additional routes
-try:
-    from all_routes import register_all_imported_routes
-    register_all_imported_routes(app)
-except:
-    pass
-
 # Try to register service tickets if available
 try:
     from service_tickets_page import register_service_tickets_routes
