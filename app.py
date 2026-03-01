@@ -73,8 +73,7 @@ from all_routes import (
     register_dispatch_routes,
     register_reports_routes,
     register_notifications_routes,
-    register_specifications_routes,
-    register_all_imported_routes
+    register_specifications_routes
 )
 from stock_fix_routes import register_stock_fix_routes
 from customer_auth import register_customer_auth_routes
@@ -92,7 +91,13 @@ register_specifications_routes(app)
 register_stock_fix_routes(app)
 register_customer_auth_routes(app)
 register_product_images_advanced(app)
-register_all_imported_routes(app)
+
+# Try to import and register additional routes
+try:
+    from all_routes import register_all_imported_routes
+    register_all_imported_routes(app)
+except:
+    pass
 
 # Try to register service tickets if available
 try:
