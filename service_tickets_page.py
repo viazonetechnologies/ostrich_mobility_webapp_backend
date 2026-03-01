@@ -208,14 +208,14 @@ def register_service_tickets_routes(app):
                     else:
                         customer_id = customer['id']
                     
-                    # Check for duplicate ticket
+                    # Check for duplicate ticket - check all key fields
                     cursor.execute("""
                         SELECT id FROM service_tickets 
-                        WHERE customer_id=%s AND issue_description=%s AND DATE(created_at)=DATE(%s)
+                        WHERE customer_id=%s AND issue_description=%s AND priority=%s AND status=%s
                         LIMIT 1
-                    """, (customer_id, issue_desc, datetime.now()))
+                    """, (customer_id, issue_desc, priority, status))
                     if cursor.fetchone():
-                        errors.append(f"Row {idx+2}: Duplicate ticket for '{cust_name}' with same issue today")
+                        errors.append(f"Row {idx+2}: Duplicate - identical ticket already exists")
                         continue
                     
                     product_id = None
