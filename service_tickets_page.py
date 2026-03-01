@@ -142,13 +142,17 @@ def register_service_tickets_routes(app):
             print(f"Delete service ticket error: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/api/v1/service-tickets/import', methods=['POST'])
+    @app.route('/api/v1/service-tickets/import', methods=['POST', 'OPTIONS'])
     @jwt_required(optional=True)
     def import_service_tickets():
         """Import service tickets from Excel"""
+        if request.method == 'OPTIONS':
+            return jsonify({'status': 'ok'}), 200
+            
         if not PANDAS_AVAILABLE:
             return jsonify({'error': 'Excel import requires pandas and openpyxl'}), 503
         
+        conn = None
         try:
             if 'file' not in request.files:
                 return jsonify({'error': 'No file uploaded'}), 400
@@ -162,6 +166,8 @@ def register_service_tickets_routes(app):
             print(f"Excel loaded: {len(df)} rows, columns: {list(df.columns)}")
             
             conn = get_db()
+            if not conn:
+                return jsonify({'error': 'Database connection failed'}), 500
             cursor = conn.cursor(pymysql.cursors.DictCursor)
             
             imported = 0
@@ -271,6 +277,8 @@ def register_service_tickets_routes(app):
                         issue_date
                     ))
                     imported += 1
+                    if imported % 10 == 0:
+                        conn.commit()
                 except Exception as e:
                     errors.append(f"Row {idx+2}: {str(e)}")
                     print(f"Import row {idx+2} error: {e}")
@@ -288,6 +296,12 @@ def register_service_tickets_routes(app):
             return jsonify(result)
             
         except Exception as e:
+            if conn:
+                try:
+                    conn.rollback()
+                    conn.close()
+                except:
+                    pass
             error_msg = str(e)
             print(f"Import error: {error_msg}")
             import traceback
